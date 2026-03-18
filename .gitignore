@@ -1,6 +1,7 @@
 # Build output
 javaproject/build/
 javaproject/dist/
+javaproject/target/
 
 # NetBeans private config (machine-specific paths)
 javaproject/nbproject/private/
