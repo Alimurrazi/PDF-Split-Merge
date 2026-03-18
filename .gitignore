@@ -1,0 +1,16 @@
+# Build output
+javaproject/build/
+javaproject/dist/
+
+# NetBeans private config (machine-specific paths)
+javaproject/nbproject/private/
+
+# IDE files
+*.iml
+.idea/
+*.suo
+*.user
+
+# OS files
+.DS_Store
+Thumbs.db
