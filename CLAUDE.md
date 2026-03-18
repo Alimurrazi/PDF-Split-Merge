@@ -7,13 +7,10 @@ A Java/JavaFX desktop application for splitting, merging, and removing pages fro
 ```
 javaproject/
 ├── src/www/rdm/com/       # Java source files
-├── build/classes/         # Compiled .class files
-├── dist/
-│   ├── Project200.jar     # Pre-built JAR
-│   └── lib/
-│       └── itextpdf-5.5.9.jar  # PDF library dependency
-├── nbproject/             # NetBeans project config
-└── build.xml              # Ant build script
+├── target/                # Maven build output (ignored by git)
+├── nbproject/             # NetBeans project config (legacy)
+├── build.xml              # Ant build script (legacy)
+└── pom.xml                # Maven build config
 ```
 
 ## Key Classes
@@ -26,39 +23,43 @@ javaproject/
 | `Chapter` / `StringNumber` | Split PDF by page ranges |
 | `Openfile` | Open resulting PDF after processing |
 | `Badpdf` | Error dialog for corrupted/invalid PDFs |
+| `SemTextExtractionStrategy` | Text extraction from PDF |
+| `Yourchoice` | User choice dialog |
 
 ## Tech Stack
 
-- **Language:** Java 8
-- **UI:** JavaFX (bundled with JDK 8)
-- **PDF Library:** iText 5.5.9 (`com.itextpdf:itextpdf`)
-- **Build:** Apache Ant (NetBeans project)
+- **Language:** Java 21
+- **UI:** JavaFX 21 (via `org.openjfx` Maven dependency)
+- **PDF Library:** iText 5.5.13.4 (`com.itextpdf:itextpdf`)
+- **Build:** Maven (`pom.xml`)
 - **Package:** `www.rdm.com`
 
 ## Running Locally
 
 ### Prerequisites
-- Java 8 (JDK 8 with bundled JavaFX) — e.g., [Liberica JDK 8](https://bell-sw.com/pages/downloads/)
+- JDK 21 (e.g., Eclipse Temurin 21)
+- Maven 3.9.x
+- VS Code with Extension Pack for Java
 
-### Option 1: Run pre-built JAR
-```bash
-java -jar javaproject/dist/Project200.jar
-```
-
-### Option 2: Open in NetBeans
-1. Open NetBeans → File → Open Project → select `javaproject/`
-2. Fix library path: update `file.reference.itextpdf-5.5.9.jar` in `nbproject/project.properties` to point to `dist/lib/itextpdf-5.5.9.jar`
-3. Press F6 to run
-
-### Option 3: Ant build
+### Run the app
 ```bash
 cd javaproject
-ant run
+mvn javafx:run
+```
+
+### Compile only
+```bash
+mvn compile
+```
+
+### Build fat JAR
+```bash
+mvn package
+# Output: target/pdf-split-merge-1.0-SNAPSHOT.jar
 ```
 
 ## Dependency Notes
 
-- The iText JAR path is hardcoded to `G:\itextpdf-5.5.9.jar` in `nbproject/project.properties`
-- A copy of the JAR exists at `javaproject/dist/lib/itextpdf-5.5.9.jar`
-- To update iText: replace the JAR with `itextpdf-5.5.13.4.jar` (latest iText 5, drop-in compatible)
-- iText 7+ requires significant API changes
+- iText 5.5.13.4 is managed via Maven (no local JAR needed)
+- iText 7+ requires significant API changes — stay on iText 5.x
+- Legacy Ant/NetBeans files (`build.xml`, `nbproject/`) are kept but not used
