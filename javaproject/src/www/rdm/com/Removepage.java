@@ -18,13 +18,11 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
-import static www.rdm.com.Project200.scene1;
 
 class Removepage extends Project200 {
     private static final Logger LOGGER = Logger.getLogger(Removepage.class.getName());
@@ -36,67 +34,62 @@ class Removepage extends Project200 {
     boolean checkpage[] = new boolean[50000];
 
     GridPane gridbybutton() {
-        {
-            if (coun == 1) {
-                Label text = new Label("Contributing Pages");
-                text.setFont(new Font("Arial", 25));
-                grid.add(text, 0, 1);
-                coun = 2;
-            }
-
-            Button okbutton = new Button("OK");
-            okbutton.setStyle("-fx-font: 12 arial; -fx-base: #b6e7c9;");
-            TextField tf1 = new TextField();
-            TextField tf2 = new TextField();
-            tf1.setPrefWidth(100);
-            tf2.setPrefWidth(100);
-            tf1.setPromptText("From");
-            tf2.setPromptText("To");
-
-            Label errorLabel = new Label();
-            errorLabel.setStyle("-fx-text-fill: red;");
-
-            HBox hbox1 = new HBox();
-            hbox1.setSpacing(10);
-            hbox1.getChildren().addAll(tf1, tf2, okbutton, errorLabel);
-            grid.add(hbox1, 0, b);
-
-            okbutton.setOnAction(new EventHandler<ActionEvent>() {
-                int from, to;
-                @Override
-                public void handle(ActionEvent e) {
-                    errorLabel.setText("");
-                    if (tf1.getText() == null || tf1.getText().isEmpty() || tf2.getText() == null || tf2.getText().isEmpty()) {
-                        errorLabel.setText("Both fields are required");
-                        return;
-                    }
-                    try {
-                        from = Integer.parseInt(tf1.getText().trim());
-                        to = Integer.parseInt(tf2.getText().trim());
-                    } catch (NumberFormatException ex) {
-                        errorLabel.setText("Pages must be numbers");
-                        return;
-                    }
-                    if (from < 1 || to < 1) {
-                        errorLabel.setText("Page numbers must be positive");
-                        return;
-                    }
-                    if (from > to) {
-                        errorLabel.setText("'From' must be <= 'To'");
-                        return;
-                    }
-                    row = GridPane.getRowIndex(hbox1);
-                    firstpart[row] = from;
-                    secondpart[row] = to;
-                    if (from < lowestpage)
-                        lowestpage = from;
-                    if (to > highestpage)
-                        highestpage = to;
-                    beforeend = true;
-                }
-            });
-            b = b + 1;
+        if (coun == 1) {
+            Label text = new Label("Contributing Pages");
+            text.setFont(new Font("Arial", 25));
+            grid.add(text, 0, 1);
+            coun = 2;
         }
+
+        Button okbutton = new Button("OK");
+        okbutton.setStyle("-fx-font: 12 arial; -fx-base: #b6e7c9;");
+        TextField tf1 = new TextField();
+        TextField tf2 = new TextField();
+        tf1.setPrefWidth(100);
+        tf2.setPrefWidth(100);
+        tf1.setPromptText("From");
+        tf2.setPromptText("To");
+
+        Label errorLabel = new Label();
+        errorLabel.setStyle("-fx-text-fill: red;");
+
+        HBox hbox1 = new HBox();
+        hbox1.setSpacing(10);
+        hbox1.getChildren().addAll(tf1, tf2, okbutton, errorLabel);
+        grid.add(hbox1, 0, b);
+
+        okbutton.setOnAction(new EventHandler<ActionEvent>() {
+            int from, to;
+            @Override
+            public void handle(ActionEvent e) {
+                errorLabel.setText("");
+                if (tf1.getText() == null || tf1.getText().isEmpty() || tf2.getText() == null || tf2.getText().isEmpty()) {
+                    errorLabel.setText("Both fields are required");
+                    return;
+                }
+                try {
+                    from = Integer.parseInt(tf1.getText().trim());
+                    to = Integer.parseInt(tf2.getText().trim());
+                } catch (NumberFormatException ex) {
+                    errorLabel.setText("Pages must be numbers");
+                    return;
+                }
+                if (from < 1 || to < 1) {
+                    errorLabel.setText("Page numbers must be positive");
+                    return;
+                }
+                if (from > to) {
+                    errorLabel.setText("'From' must be <= 'To'");
+                    return;
+                }
+                row = GridPane.getRowIndex(hbox1);
+                firstpart[row] = from;
+                secondpart[row] = to;
+                beforeend = true;
+            }
+        });
+        b = b + 1;
+
         if (d == 1) {
             grid.getChildren().clear();
             d = 0;

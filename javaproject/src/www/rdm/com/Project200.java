@@ -5,10 +5,8 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.BadPdfFormatException;
 import com.itextpdf.text.pdf.PdfCopy;
 import com.itextpdf.text.pdf.PdfReader;
-import java.awt.Desktop;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -23,15 +21,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -40,21 +34,17 @@ public class Project200 extends Application {
 
     public static Path pdfpath = null;
     BorderPane border = new BorderPane();
-    GridPane grid, grid1, grid2;
+    GridPane grid, grid1;
     static Scene scene, scene1, scene2, scene3, scene4, scenesn, scene5, scene6;
-    int a = 0, b = 3, count = 1;
-    String s1 = null, s2 = null;
+    int b = 3;
     boolean selectedpage[] = new boolean[20000];
     String inputfile = null;
-    int lowestpage = 9999999, highestpage = 0;
     int d = 0, coun = 1;
     int firstpart[] = new int[2000];
     int secondpart[] = new int[2000];
     int row;
     boolean beforeend = false;
-    boolean back = false;
     static Stage pristage;
-    boolean textoffile = false;
     String filename = null;
 
     GridPane gridinfo() {
@@ -151,74 +141,66 @@ public class Project200 extends Application {
             if (selectedpage[i] != false)
                 break;
         }
-        if (i > cpto)
-            return true;
-        else
-            return false;
+        return i > cpto;
     }
 
     GridPane gridbybutton() {
-        {
-            if (coun == 1) {
-                Label text = new Label("Contributing Pages");
-                text.setFont(new Font("Arial", 25));
-                grid1.add(text, 0, 1);
-                coun = 2;
-            }
-
-            Button okbutton = new Button("OK");
-            okbutton.setStyle("-fx-font: 12 arial; -fx-base: #b6e7c9;");
-            TextField tf1 = new TextField();
-            TextField tf2 = new TextField();
-            tf1.setPrefWidth(100);
-            tf2.setPrefWidth(100);
-            tf1.setPromptText("From");
-            tf2.setPromptText("To");
-
-            Label errorLabel = new Label();
-            errorLabel.setStyle("-fx-text-fill: red;");
-
-            HBox hbox1 = new HBox();
-            hbox1.setSpacing(10);
-            hbox1.getChildren().addAll(tf1, tf2, okbutton, errorLabel);
-            grid1.add(hbox1, 0, b);
-
-            okbutton.setOnAction(new EventHandler<ActionEvent>() {
-                int from, to;
-                @Override
-                public void handle(ActionEvent e) {
-                    errorLabel.setText("");
-                    if (tf1.getText() == null || tf1.getText().isEmpty() || tf2.getText() == null || tf2.getText().isEmpty()) {
-                        errorLabel.setText("Both fields are required");
-                        return;
-                    }
-                    try {
-                        from = Integer.parseInt(tf1.getText().trim());
-                        to = Integer.parseInt(tf2.getText().trim());
-                    } catch (NumberFormatException ex) {
-                        errorLabel.setText("Pages must be numbers");
-                        return;
-                    }
-                    if (from < 1 || to < 1) {
-                        errorLabel.setText("Page numbers must be positive");
-                        return;
-                    }
-                    if (from > to) {
-                        errorLabel.setText("'From' must be <= 'To'");
-                        return;
-                    }
-                    row = GridPane.getRowIndex(hbox1);
-                    firstpart[row] = from;
-                    secondpart[row] = to;
-                    if (from < lowestpage)
-                        lowestpage = from;
-                    if (to > highestpage)
-                        highestpage = to;
-                    beforeend = true;
-                }
-            });
-            b = b + 1;
+        if (coun == 1) {
+            Label text = new Label("Contributing Pages");
+            text.setFont(new Font("Arial", 25));
+            grid1.add(text, 0, 1);
+            coun = 2;
         }
+
+        Button okbutton = new Button("OK");
+        okbutton.setStyle("-fx-font: 12 arial; -fx-base: #b6e7c9;");
+        TextField tf1 = new TextField();
+        TextField tf2 = new TextField();
+        tf1.setPrefWidth(100);
+        tf2.setPrefWidth(100);
+        tf1.setPromptText("From");
+        tf2.setPromptText("To");
+
+        Label errorLabel = new Label();
+        errorLabel.setStyle("-fx-text-fill: red;");
+
+        HBox hbox1 = new HBox();
+        hbox1.setSpacing(10);
+        hbox1.getChildren().addAll(tf1, tf2, okbutton, errorLabel);
+        grid1.add(hbox1, 0, b);
+
+        okbutton.setOnAction(new EventHandler<ActionEvent>() {
+            int from, to;
+            @Override
+            public void handle(ActionEvent e) {
+                errorLabel.setText("");
+                if (tf1.getText() == null || tf1.getText().isEmpty() || tf2.getText() == null || tf2.getText().isEmpty()) {
+                    errorLabel.setText("Both fields are required");
+                    return;
+                }
+                try {
+                    from = Integer.parseInt(tf1.getText().trim());
+                    to = Integer.parseInt(tf2.getText().trim());
+                } catch (NumberFormatException ex) {
+                    errorLabel.setText("Pages must be numbers");
+                    return;
+                }
+                if (from < 1 || to < 1) {
+                    errorLabel.setText("Page numbers must be positive");
+                    return;
+                }
+                if (from > to) {
+                    errorLabel.setText("'From' must be <= 'To'");
+                    return;
+                }
+                row = GridPane.getRowIndex(hbox1);
+                firstpart[row] = from;
+                secondpart[row] = to;
+                beforeend = true;
+            }
+        });
+        b = b + 1;
+
         if (d == 1) {
             grid1.getChildren().clear();
             d = 0;
