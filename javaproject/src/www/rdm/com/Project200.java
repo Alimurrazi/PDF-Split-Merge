@@ -175,29 +175,46 @@ public class Project200 extends Application {
             tf1.setPromptText("From");
             tf2.setPromptText("To");
 
+            Label errorLabel = new Label();
+            errorLabel.setStyle("-fx-text-fill: red;");
+
             HBox hbox1 = new HBox();
             hbox1.setSpacing(10);
-            hbox1.getChildren().addAll(tf1, tf2, okbutton);
+            hbox1.getChildren().addAll(tf1, tf2, okbutton, errorLabel);
             grid1.add(hbox1, 0, b);
 
             okbutton.setOnAction(new EventHandler<ActionEvent>() {
                 int from, to;
                 @Override
                 public void handle(ActionEvent e) {
-                    beforeend = true;
-                    if ((tf1.getText() != null && !tf1.getText().isEmpty() && tf2.getText() != null && !tf2.getText().isEmpty())) {
-                        row = GridPane.getRowIndex(hbox1);
-                        s1 = tf1.getText();
-                        s2 = tf2.getText();
-                        from = Integer.parseInt(s1);
-                        to = Integer.parseInt(s2);
-                        firstpart[row] = from;
-                        secondpart[row] = to;
-                        if (from < lowestpage)
-                            lowestpage = from;
-                        if (to > highestpage)
-                            highestpage = to;
+                    errorLabel.setText("");
+                    if (tf1.getText() == null || tf1.getText().isEmpty() || tf2.getText() == null || tf2.getText().isEmpty()) {
+                        errorLabel.setText("Both fields are required");
+                        return;
                     }
+                    try {
+                        from = Integer.parseInt(tf1.getText().trim());
+                        to = Integer.parseInt(tf2.getText().trim());
+                    } catch (NumberFormatException ex) {
+                        errorLabel.setText("Pages must be numbers");
+                        return;
+                    }
+                    if (from < 1 || to < 1) {
+                        errorLabel.setText("Page numbers must be positive");
+                        return;
+                    }
+                    if (from > to) {
+                        errorLabel.setText("'From' must be <= 'To'");
+                        return;
+                    }
+                    row = GridPane.getRowIndex(hbox1);
+                    firstpart[row] = from;
+                    secondpart[row] = to;
+                    if (from < lowestpage)
+                        lowestpage = from;
+                    if (to > highestpage)
+                        highestpage = to;
+                    beforeend = true;
                 }
             });
             b = b + 1;
