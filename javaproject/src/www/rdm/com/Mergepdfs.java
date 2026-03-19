@@ -7,6 +7,8 @@ import com.itextpdf.text.pdf.PdfCopy;
 import com.itextpdf.text.pdf.PdfReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.ActionEvent;
@@ -24,8 +26,7 @@ class Mergepdfs {
     private static final Logger LOGGER = Logger.getLogger(Mergepdfs.class.getName());
 
     BorderPane border = new BorderPane();
-    String[] filelist = new String[200];
-    int serial;
+    List<String> filelist = new ArrayList<>();
     int filenamer;
     Project200 a = new Project200();
     int check = 0;
@@ -34,7 +35,6 @@ class Mergepdfs {
     void mergefiles() {
         File selectedfile = null;
         try {
-            int i, j;
             Document document = new Document();
             File file = a.savefile();
             if (file == null) return;
@@ -42,14 +42,14 @@ class Mergepdfs {
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 PdfCopy pdfcopy = new PdfCopy(document, fos);
                 document.open();
-                for (i = 0; i < serial; i++) {
-                    PdfReader pdfreader = new PdfReader(filelist[i]);
+                for (String filepath : filelist) {
+                    PdfReader pdfreader = new PdfReader(filepath);
                     try {
-                        for (j = 1; j <= pdfreader.getNumberOfPages(); j++) {
+                        for (int j = 1; j <= pdfreader.getNumberOfPages(); j++) {
                             try {
                                 pdfcopy.addPage(pdfcopy.getImportedPage(pdfreader, j));
                             } catch (Exception e) {
-                                LOGGER.log(Level.WARNING, "Skipping malformed page " + j + " in " + filelist[i], e);
+                                LOGGER.log(Level.WARNING, "Skipping malformed page " + j + " in " + filepath, e);
                             }
                         }
                     } finally {
@@ -91,26 +91,23 @@ class Mergepdfs {
         border.setTop(hbox);
         border.setLeft(grid1);
 
-        serial = 0;
         filenamer = 1;
 
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 Project200 project200 = new Project200();
-                String filename = null;
                 try {
-                    filename = project200.filepath();
+                    String filename = project200.filepath();
                     if (filename == null) return;
                     Path pathp = Paths.get(filename);
                     a.pdfpath = pathp.getFileName();
                     PdfReader pdfreader = new PdfReader(filename);
                     try {
-                        filelist[serial] = filename;
-                        serial++;
+                        filelist.add(filename);
                         Text t = new Text();
                         Path path = Paths.get(filename);
-                        t.setText(Integer.toString(serial) + "." + "  " + path.getFileName());
+                        t.setText(filelist.size() + "." + "  " + path.getFileName());
                         border.setLeft(gridbybutton(t));
                     } finally {
                         pdfreader.close();
@@ -131,6 +128,8 @@ class Mergepdfs {
 
         btn3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
+                filelist.clear();
+                filenamer = 1;
                 Text t1 = new Text();
                 t1.setText(null);
                 check = 1;

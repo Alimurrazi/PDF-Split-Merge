@@ -9,7 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.ActionEvent;
@@ -30,8 +31,6 @@ class Removepage extends Project200 {
     BorderPane borderpane = new BorderPane();
     Project200 a = new Project200();
     GridPane grid = new GridPane();
-    int count = 1;
-    boolean checkpage[] = new boolean[50000];
 
     GridPane gridbybutton() {
         if (coun == 1) {
@@ -82,9 +81,7 @@ class Removepage extends Project200 {
                     errorLabel.setText("'From' must be <= 'To'");
                     return;
                 }
-                row = GridPane.getRowIndex(hbox1);
-                firstpart[row] = from;
-                secondpart[row] = to;
+                pageRanges.add(new int[]{from, to});
                 beforeend = true;
             }
         });
@@ -92,6 +89,7 @@ class Removepage extends Project200 {
 
         if (d == 1) {
             grid.getChildren().clear();
+            pageRanges.clear();
             d = 0;
             coun = 1;
             b = 2;
@@ -104,7 +102,6 @@ class Removepage extends Project200 {
         File selectedfile = null;
         PdfReader pdfreader = null;
         try {
-            int i, j;
             File file = savefile();
             if (file == null) return;
             selectedfile = file;
@@ -119,17 +116,15 @@ class Removepage extends Project200 {
                 }
                 document.open();
 
-                Arrays.fill(checkpage, true);
-
-                for (i = 2; i <= b; i++) {
-                    for (j = firstpart[i]; j <= secondpart[i]; j++) {
-                        if (j != 0)
-                            checkpage[j] = false;
+                Set<Integer> pagesToRemove = new HashSet<>();
+                for (int[] range : pageRanges) {
+                    for (int j = range[0]; j <= range[1]; j++) {
+                        pagesToRemove.add(j);
                     }
                 }
 
-                for (i = 1; i <= pdfreader.getNumberOfPages(); i++) {
-                    if (checkpage[i] == true) {
+                for (int i = 1; i <= pdfreader.getNumberOfPages(); i++) {
+                    if (!pagesToRemove.contains(i)) {
                         try {
                             copy.addPage(copy.getImportedPage(pdfreader, i));
                         } catch (BadPdfFormatException ex) {
@@ -178,11 +173,9 @@ class Removepage extends Project200 {
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                inputfile = null;
                 try {
                     inputfile = a.filepath();
                     if (inputfile == null) return;
-                    Arrays.fill(selectedpage, false);
                     Path path = Paths.get(inputfile);
                     a.pdfpath = path.getFileName();
                     PdfReader pdfreader = new PdfReader(inputfile);

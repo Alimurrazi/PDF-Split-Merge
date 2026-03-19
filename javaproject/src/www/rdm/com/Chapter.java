@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.ActionEvent;
@@ -40,9 +43,9 @@ class Chapter {
     public static int compp = 0, compl = 0;
     public static float max = 0;
     public static int startforinput, endforinput;
-    public static float ara[][] = new float[5000][1000];
-    public static int ara1[] = new int[5000];
-    public static String sara[][] = new String[5000][1000];
+    public static Map<Integer, Map<Integer, Float>> ara = new HashMap<>();
+    public static Map<Integer, Integer> ara1 = new HashMap<>();
+    public static Map<Integer, Map<Integer, String>> sara = new HashMap<>();
 
     void splitbychapter() throws IOException {
         PdfReader reader = new PdfReader(filename);
@@ -68,8 +71,8 @@ class Chapter {
         for (int i = startforinput + 1; i <= compp; i++) {
             if (check == true)
                 break;
-            for (int j = 1; j <= ara1[i]; j++) {
-                if (ara[i][j] == max) {
+            for (int j = 1; j <= ara1.getOrDefault(i, 0); j++) {
+                if (ara.getOrDefault(i, Collections.emptyMap()).getOrDefault(j, 0.0f) == max) {
                     endforinput = i - 1;
                     check = true;
                     break;
@@ -96,13 +99,7 @@ class Chapter {
         border.setLeft(gridbybutton());
         startforinput = 0;
         endforinput = 0;
-        for (int i = 1; i <= compp; i++) {
-            for (int j = 1; j <= ara1[i]; j++) {
-                clear = " ";
-                clear = clear.replaceAll("\\s+", "");
-                sara[i][j] = clear;
-            }
-        }
+        sara.clear();
     }
 
     GridPane gridbybutton() {

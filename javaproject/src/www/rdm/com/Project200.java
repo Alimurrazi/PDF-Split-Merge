@@ -9,7 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
@@ -37,12 +38,9 @@ public class Project200 extends Application {
     GridPane grid, grid1;
     static Scene scene, scene1, scene2, scene3, scene4, scenesn, scene5, scene6;
     int b = 3;
-    boolean selectedpage[] = new boolean[20000];
     String inputfile = null;
     int d = 0, coun = 1;
-    int firstpart[] = new int[2000];
-    int secondpart[] = new int[2000];
-    int row;
+    List<int[]> pageRanges = new ArrayList<>();
     boolean beforeend = false;
     static Stage pristage;
     String filename = null;
@@ -97,7 +95,6 @@ public class Project200 extends Application {
         try {
             Path path = Paths.get(filename);
             pdfpath = path.getFileName();
-            int i, j;
             File file = savefile();
             if (file == null) return;
             selectedfile = file;
@@ -111,15 +108,13 @@ public class Project200 extends Application {
                     return;
                 }
                 document.open();
-                for (i = 2; i <= b; i++) {
-                    for (j = firstpart[i]; j <= secondpart[i]; j++) {
-                        if (j != 0) {
-                            try {
-                                copy.addPage(copy.getImportedPage(pdfreader, j));
-                            } catch (BadPdfFormatException ex) {
-                                LOGGER.log(Level.WARNING, "Skipping malformed page " + j, ex);
-                                badpdfcall();
-                            }
+                for (int[] range : pageRanges) {
+                    for (int j = range[0]; j <= range[1]; j++) {
+                        try {
+                            copy.addPage(copy.getImportedPage(pdfreader, j));
+                        } catch (BadPdfFormatException ex) {
+                            LOGGER.log(Level.WARNING, "Skipping malformed page " + j, ex);
+                            badpdfcall();
                         }
                     }
                 }
@@ -133,15 +128,6 @@ public class Project200 extends Application {
         } finally {
             if (pdfreader != null) pdfreader.close();
         }
-    }
-
-    boolean checkpage(int cpfrom, int cpto) {
-        int i;
-        for (i = cpfrom; i <= cpto; i++) {
-            if (selectedpage[i] != false)
-                break;
-        }
-        return i > cpto;
     }
 
     GridPane gridbybutton() {
@@ -193,9 +179,7 @@ public class Project200 extends Application {
                     errorLabel.setText("'From' must be <= 'To'");
                     return;
                 }
-                row = GridPane.getRowIndex(hbox1);
-                firstpart[row] = from;
-                secondpart[row] = to;
+                pageRanges.add(new int[]{from, to});
                 beforeend = true;
             }
         });
@@ -203,6 +187,7 @@ public class Project200 extends Application {
 
         if (d == 1) {
             grid1.getChildren().clear();
+            pageRanges.clear();
             d = 0;
             coun = 1;
             b = 2;
@@ -239,12 +224,8 @@ public class Project200 extends Application {
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                inputfile = null;
                 try {
                     inputfile = filepath();
-                    if (inputfile != null) {
-                        Arrays.fill(selectedpage, false);
-                    }
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
                     badpdfcall();
