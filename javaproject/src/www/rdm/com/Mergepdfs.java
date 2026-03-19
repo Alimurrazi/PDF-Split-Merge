@@ -7,6 +7,8 @@ import com.itextpdf.text.pdf.PdfCopy;
 import com.itextpdf.text.pdf.PdfReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -19,6 +21,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 class Mergepdfs {
+    private static final Logger LOGGER = Logger.getLogger(Mergepdfs.class.getName());
+
     BorderPane border = new BorderPane();
     String[] filelist = new String[200];
     int serial;
@@ -45,6 +49,7 @@ class Mergepdfs {
                             try {
                                 pdfcopy.addPage(pdfcopy.getImportedPage(pdfreader, j));
                             } catch (Exception e) {
+                                LOGGER.log(Level.WARNING, "Skipping malformed page " + j + " in " + filelist[i], e);
                             }
                         }
                     } finally {
@@ -56,6 +61,8 @@ class Mergepdfs {
             Openfile openfile = new Openfile();
             openfile.openm(selectedfile);
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to merge PDFs", e);
+            a.badpdfcall();
         }
     }
 
@@ -109,6 +116,7 @@ class Mergepdfs {
                         pdfreader.close();
                     }
                 } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
                     a.badpdfcall();
                 }
             }

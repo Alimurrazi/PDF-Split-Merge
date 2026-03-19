@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 import javafx.stage.Stage;
 
 class Chapter {
+    private static final Logger LOGGER = Logger.getLogger(Chapter.class.getName());
+
     BorderPane border = new BorderPane();
     Project200 a = new Project200();
     GridPane grid2 = new GridPane();
@@ -84,6 +86,7 @@ class Chapter {
             try {
                 yourchoice.start(prstage);
             } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Failed to show chapter-not-found dialog", ex);
             }
         } else {
             file = a.savefile();
@@ -122,6 +125,8 @@ class Chapter {
                     try {
                         splitbychapter();
                     } catch (IOException ex) {
+                        LOGGER.log(Level.SEVERE, "Failed to split PDF by chapter", ex);
+                        a.badpdfcall();
                     }
                 }
             }
@@ -170,6 +175,7 @@ class Chapter {
                         pdfreader.close();
                     }
                 } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
                     a.badpdfcall();
                 }
             }
@@ -202,6 +208,7 @@ class Chapter {
                 try {
                     copy = new PdfCopy(document, fos);
                 } catch (DocumentException ex) {
+                    LOGGER.log(Level.SEVERE, "Failed to create PDF writer", ex);
                     return;
                 }
                 document.open();
@@ -209,6 +216,7 @@ class Chapter {
                     try {
                         copy.addPage(copy.getImportedPage(pdfreader, i));
                     } catch (BadPdfFormatException ex) {
+                        LOGGER.log(Level.WARNING, "Skipping malformed page " + i, ex);
                     }
                 }
                 document.close();
@@ -216,6 +224,8 @@ class Chapter {
             Openfile openfile = new Openfile();
             openfile.openm(selectedfile);
         } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Failed to split PDF", ex);
+            a.badpdfcall();
         } finally {
             if (pdfreader != null) pdfreader.close();
         }

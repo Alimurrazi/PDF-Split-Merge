@@ -36,6 +36,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class Project200 extends Application {
+    private static final Logger LOGGER = Logger.getLogger(Project200.class.getName());
+
     public static Path pdfpath = null;
     BorderPane border = new BorderPane();
     GridPane grid, grid1, grid2;
@@ -93,6 +95,7 @@ public class Project200 extends Application {
             try {
                 badpdf.start(prstage);
             } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Failed to show bad PDF dialog", e);
             }
         }
     }
@@ -114,6 +117,7 @@ public class Project200 extends Application {
                 try {
                     copy = new PdfCopy(document, fos);
                 } catch (DocumentException ex) {
+                    LOGGER.log(Level.SEVERE, "Failed to create PDF writer", ex);
                     return;
                 }
                 document.open();
@@ -123,6 +127,7 @@ public class Project200 extends Application {
                             try {
                                 copy.addPage(copy.getImportedPage(pdfreader, j));
                             } catch (BadPdfFormatException ex) {
+                                LOGGER.log(Level.WARNING, "Skipping malformed page " + j, ex);
                                 badpdfcall();
                             }
                         }
@@ -133,6 +138,7 @@ public class Project200 extends Application {
             Openfile openfile = new Openfile();
             openfile.openm(selectedfile);
         } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Failed to split/merge PDF", ex);
             badpdfcall();
         } finally {
             if (pdfreader != null) pdfreader.close();
@@ -241,6 +247,7 @@ public class Project200 extends Application {
                         Arrays.fill(selectedpage, false);
                     }
                 } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
                     badpdfcall();
                 }
             }

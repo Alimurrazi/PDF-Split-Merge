@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -25,6 +27,7 @@ import javafx.scene.text.Font;
 import static www.rdm.com.Project200.scene1;
 
 class Removepage extends Project200 {
+    private static final Logger LOGGER = Logger.getLogger(Removepage.class.getName());
 
     BorderPane borderpane = new BorderPane();
     Project200 a = new Project200();
@@ -101,6 +104,7 @@ class Removepage extends Project200 {
                 try {
                     copy = new PdfCopy(document, fos);
                 } catch (DocumentException ex) {
+                    LOGGER.log(Level.SEVERE, "Failed to create PDF writer", ex);
                     return;
                 }
                 document.open();
@@ -119,6 +123,7 @@ class Removepage extends Project200 {
                         try {
                             copy.addPage(copy.getImportedPage(pdfreader, i));
                         } catch (BadPdfFormatException ex) {
+                            LOGGER.log(Level.WARNING, "Skipping malformed page " + i, ex);
                         }
                     }
                 }
@@ -128,7 +133,8 @@ class Removepage extends Project200 {
             Openfile openfile = new Openfile();
             openfile.openm(selectedfile);
         } catch (Exception ex) {
-            System.out.println(ex);
+            LOGGER.log(Level.SEVERE, "Failed to remove pages from PDF", ex);
+            a.badpdfcall();
         } finally {
             if (pdfreader != null) pdfreader.close();
         }
@@ -175,6 +181,7 @@ class Removepage extends Project200 {
                         pdfreader.close();
                     }
                 } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
                     a.badpdfcall();
                 }
             }

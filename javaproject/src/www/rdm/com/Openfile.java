@@ -65,11 +65,9 @@ class Openfile {
          {   
                         try {
                 desktop.open(file);
-          //      return;
-          //      Platform.exit();
                 stage.close();
             } catch (IOException ex) {
-              //  Logger.getLogger(Openfile.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Openfile.class.getName()).log(Level.SEVERE, "Failed to open PDF file", ex);
             }
          }
         }
