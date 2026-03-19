@@ -129,10 +129,11 @@ class Removepage extends Project200 {
             PdfCopy copy = null;
             try {
                 File file=savefile();
+                if (file == null) return;
                 selectedfile=file;
                copy = new PdfCopy(document,new FileOutputStream(file));
             } catch (DocumentException ex) {
-             
+
             }
             document.open();
         

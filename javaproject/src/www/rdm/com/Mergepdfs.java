@@ -49,12 +49,13 @@ class Mergepdfs{
          try
          {
          File file=a.savefile();
+         if (file == null) return;
          selectedfile=file;
          pdfcopy=new PdfCopy(document,new FileOutputStream(file));
          }
          catch(Exception e)
          {
-             
+
          }
          
         document.open();

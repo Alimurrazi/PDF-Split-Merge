@@ -78,16 +78,16 @@ public class Project200 extends Application{
     }
     
     String filepath()
-    {  
+    {
      Stage mystage = null;
      FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PdF files", "*.pdf");
      FileChooser fileChooser=new FileChooser();
      fileChooser.getExtensionFilters().add(extFilter);
      File file =fileChooser.showOpenDialog(mystage);
-     inputfile = null; 
+     inputfile = null;
+     if (file == null) return null;
      inputfile = file.getAbsolutePath();
      filename=file.getName();
- //    System.out.println(inputfile);
      return inputfile;
     }
     
@@ -132,10 +132,11 @@ public class Project200 extends Application{
             PdfCopy copy = null;
             try {
                 File file=savefile();
+                if (file == null) return;
                 selectedfile=file;
                copy = new PdfCopy(document,new FileOutputStream(file));
             } catch (DocumentException ex) {
-             
+
             }
             document.open();
             

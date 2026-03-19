@@ -103,8 +103,9 @@ class Chapter {
        }
         }
         else
-        {     
+        {
        file=a.savefile();
+       if (file == null) return;
        split();
         }
         
