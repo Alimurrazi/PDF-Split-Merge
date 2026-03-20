@@ -21,6 +21,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 class Mergepdfs {
     private static final Logger LOGGER = Logger.getLogger(Mergepdfs.class.getName());
@@ -77,9 +78,8 @@ class Mergepdfs {
         return grid1;
     }
 
-    void merge() {
+    Scene merge(Stage stage, Scene homeScene) {
         grid1 = a.gridinfo();
-        a.scene2 = new Scene(border, 420, 500);
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
@@ -148,8 +148,10 @@ class Mergepdfs {
 
         back.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                a.pristage.setScene(a.scene);
+                stage.setScene(homeScene);
             }
         });
+
+        return new Scene(border, 420, 500);
     }
 }

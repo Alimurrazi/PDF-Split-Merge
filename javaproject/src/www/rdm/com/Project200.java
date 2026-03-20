@@ -33,16 +33,14 @@ import javafx.stage.Stage;
 public class Project200 extends Application {
     private static final Logger LOGGER = Logger.getLogger(Project200.class.getName());
 
-    public static Path pdfpath = null;
+    public Path pdfpath = null;
     BorderPane border = new BorderPane();
     GridPane grid, grid1;
-    static Scene scene, scene1, scene2, scene3, scene4, scenesn, scene5, scene6;
     int b = 3;
     String inputfile = null;
     int d = 0, coun = 1;
     List<int[]> pageRanges = new ArrayList<>();
     boolean beforeend = false;
-    static Stage pristage;
     String filename = null;
 
     GridPane gridinfo() {
@@ -79,7 +77,7 @@ public class Project200 extends Application {
     void badpdfcall() {
         if (pdfpath != null) {
             Stage prstage = new Stage();
-            Badpdf badpdf = new Badpdf();
+            Badpdf badpdf = new Badpdf(pdfpath);
             try {
                 badpdf.start(prstage);
             } catch (Exception e) {
@@ -195,10 +193,9 @@ public class Project200 extends Application {
         return grid1;
     }
 
-    void fbtn1() {
+    Scene fbtn1(Stage stage, Scene parentScene) {
         BorderPane border = new BorderPane();
         grid1 = gridinfo();
-        scene1 = new Scene(border, 420, 500);
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
@@ -259,13 +256,14 @@ public class Project200 extends Application {
         btn5.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                pristage.setScene(scenesn);
+                stage.setScene(parentScene);
             }
         });
+
+        return new Scene(border, 420, 500);
     }
 
     public void start(Stage primaryStage) {
-        pristage = primaryStage;
         grid = gridinfo();
 
         HBox hbox = new HBox();
@@ -279,32 +277,6 @@ public class Project200 extends Application {
         border.setTop(hbox);
         hbox.setStyle("-fx-background-color: #b6e7c9;");
 
-        btn1.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                StringNumber stringnumber = new StringNumber();
-                stringnumber.selectbox();
-                pristage.setScene(scenesn);
-            }
-        });
-
-        btn2.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                Mergepdfs mergepdfs = new Mergepdfs();
-                mergepdfs.merge();
-                pristage.setScene(scene2);
-            }
-        });
-
-        btn3.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                Removepage removepage = new Removepage();
-                removepage.remove();
-                pristage.setScene(scene3);
-            }
-        });
-
         HBox hbox1 = new HBox();
         hbox1.setPadding(new Insets(0, 10, 10, 10));
         hbox1.setSpacing(10);
@@ -313,18 +285,46 @@ public class Project200 extends Application {
         exit.setStyle("-fx-font: 18 arial; -fx-base: #b6e7c9;");
         hbox1.getChildren().addAll(exit);
 
+        border.setTop(hbox);
+        border.setBottom(hbox1);
+
+        Scene homeScene = new Scene(border, 420, 500);
+
+        btn1.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                StringNumber stringnumber = new StringNumber();
+                Scene scenesn = stringnumber.selectbox(primaryStage, homeScene);
+                primaryStage.setScene(scenesn);
+            }
+        });
+
+        btn2.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                Mergepdfs mergepdfs = new Mergepdfs();
+                Scene scene2 = mergepdfs.merge(primaryStage, homeScene);
+                primaryStage.setScene(scene2);
+            }
+        });
+
+        btn3.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent e) {
+                Removepage removepage = new Removepage();
+                Scene scene3 = removepage.remove(primaryStage, homeScene);
+                primaryStage.setScene(scene3);
+            }
+        });
+
         exit.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent e) {
                 Platform.exit();
             }
         });
 
-        border.setTop(hbox);
-        border.setBottom(hbox1);
-        scene = new Scene(border, 420, 500);
-        pristage.setTitle("PDF split & merge");
-        pristage.setScene(scene);
-        pristage.show();
+        primaryStage.setTitle("PDF split & merge");
+        primaryStage.setScene(homeScene);
+        primaryStage.show();
     }
 
     public static void main(String[] args) {
