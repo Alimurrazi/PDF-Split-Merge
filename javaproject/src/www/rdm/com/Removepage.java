@@ -9,7 +9,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,13 +28,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-class Removepage extends Project200 {
+class Removepage {
     private static final Logger LOGGER = Logger.getLogger(Removepage.class.getName());
 
-    Project200 a = new Project200();
-    GridPane grid = new GridPane();
+    private final Project200 a = new Project200();
+    private GridPane grid = new GridPane();
+    private final List<int[]> pageRanges = new ArrayList<>();
+    private boolean beforeend = false;
+    private String inputfile = null;
+    private int b = 3, coun = 1, d = 0;
 
-    GridPane gridbybutton() {
+    private GridPane gridbybutton() {
         if (coun == 1) {
             Label text = new Label("Contributing Pages");
             text.setFont(new Font("Arial", 25));
@@ -97,12 +103,12 @@ class Removepage extends Project200 {
         return grid;
     }
 
-    void select(String inputfile) {
+    private void select(String inputfile) {
         Document document = new Document();
         File selectedfile = null;
         PdfReader pdfreader = null;
         try {
-            File file = savefile();
+            File file = a.savefile();
             if (file == null) return;
             selectedfile = file;
             pdfreader = new PdfReader(inputfile);
@@ -147,7 +153,7 @@ class Removepage extends Project200 {
 
     Scene remove(Stage stage, Scene homeScene) {
         BorderPane border = new BorderPane();
-        grid = gridinfo();
+        grid = a.gridinfo();
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
