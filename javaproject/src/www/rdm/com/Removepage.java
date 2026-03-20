@@ -24,11 +24,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 
 class Removepage extends Project200 {
     private static final Logger LOGGER = Logger.getLogger(Removepage.class.getName());
 
-    BorderPane borderpane = new BorderPane();
     Project200 a = new Project200();
     GridPane grid = new GridPane();
 
@@ -145,10 +145,9 @@ class Removepage extends Project200 {
         }
     }
 
-    void remove() {
+    Scene remove(Stage stage, Scene homeScene) {
         BorderPane border = new BorderPane();
         grid = gridinfo();
-        scene3 = new Scene(border, 420, 500);
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
@@ -216,8 +215,10 @@ class Removepage extends Project200 {
         btn5.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                pristage.setScene(scene);
+                stage.setScene(homeScene);
             }
         });
+
+        return new Scene(border, 420, 500);
     }
 }

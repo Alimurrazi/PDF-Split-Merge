@@ -27,6 +27,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 class Chapter {
@@ -133,10 +134,9 @@ class Chapter {
         return grid2;
     }
 
-    void chapterstring() throws NoClassDefFoundError {
+    Scene chapterstring(Stage stage, Scene parentScene) throws NoClassDefFoundError {
         Project200 a = new Project200();
         grid2 = a.gridinfo();
-        a.scene5 = new Scene(border, 420, 500);
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
@@ -185,9 +185,11 @@ class Chapter {
 
         back.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                a.pristage.setScene(a.scenesn);
+                stage.setScene(parentScene);
             }
         });
+
+        return new Scene(border, 420, 500);
     }
 
     private void split() {
