@@ -5,13 +5,18 @@ import com.itextpdf.text.pdf.parser.ImageRenderInfo;
 import com.itextpdf.text.pdf.parser.TextExtractionStrategy;
 import com.itextpdf.text.pdf.parser.TextRenderInfo;
 import com.itextpdf.text.pdf.parser.Vector;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class SemTextExtractionStrategy extends Chapter implements TextExtractionStrategy {
+class SemTextExtractionStrategy implements TextExtractionStrategy {
     private static final Logger LOGGER = Logger.getLogger(SemTextExtractionStrategy.class.getName());
+
+    private final TextExtractionState state;
     private String text;
+
+    SemTextExtractionStrategy(TextExtractionState state) {
+        this.state = state;
+    }
 
     @Override
     public String getResultantText() {
@@ -34,24 +39,24 @@ class SemTextExtractionStrategy extends Chapter implements TextExtractionStrateg
             text = text.replaceAll("\\s+", "");
             text = text.toLowerCase();
 
-            float currentAra = ara.getOrDefault(compp, Collections.emptyMap()).getOrDefault(compl, 0.0f);
+            float currentAra = state.getAra(state.compp, state.compl);
             if (curFontSize != currentAra) {
-                compl = compl + 1;
-                ara.computeIfAbsent(compp, k -> new java.util.HashMap<>()).put(compl, curFontSize);
-                sara.computeIfAbsent(compp, k -> new java.util.HashMap<>()).put(compl, text);
-                ara1.put(compp, compl);
+                state.compl = state.compl + 1;
+                state.putAra(state.compp, state.compl, curFontSize);
+                state.putSara(state.compp, state.compl, text);
+                state.putAra1(state.compp, state.compl);
             } else {
-                String existing = sara.getOrDefault(compp, Collections.emptyMap()).getOrDefault(compl, "");
-                sara.computeIfAbsent(compp, k -> new java.util.HashMap<>()).put(compl, existing + text);
-                ara1.put(compp, compl);
+                String existing = state.getSara(state.compp, state.compl);
+                state.putSara(state.compp, state.compl, existing + text);
+                state.putAra1(state.compp, state.compl);
             }
 
-            String currentSara = sara.getOrDefault(compp, Collections.emptyMap()).getOrDefault(compl, "");
-            if (chaptername.equals(currentSara)) {
-                float currentFontSize = ara.getOrDefault(compp, Collections.emptyMap()).getOrDefault(compl, 0.0f);
-                if (currentFontSize > max) {
-                    max = currentFontSize;
-                    startforinput = compp;
+            String currentSara = state.getSara(state.compp, state.compl);
+            if (state.chaptername.equals(currentSara)) {
+                float currentFontSize = state.getAra(state.compp, state.compl);
+                if (currentFontSize > state.max) {
+                    state.max = currentFontSize;
+                    state.startforinput = state.compp;
                 }
             }
         } catch (Exception e) {

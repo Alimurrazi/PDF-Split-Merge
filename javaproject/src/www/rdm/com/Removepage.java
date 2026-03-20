@@ -1,18 +1,11 @@
 package www.rdm.com;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.pdf.BadPdfFormatException;
-import com.itextpdf.text.pdf.PdfCopy;
 import com.itextpdf.text.pdf.PdfReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.ActionEvent;
@@ -104,50 +97,15 @@ class Removepage {
     }
 
     private void select(String inputfile) {
-        Document document = new Document();
-        File selectedfile = null;
-        PdfReader pdfreader = null;
+        File file = a.savefile();
+        if (file == null) return;
         try {
-            File file = a.savefile();
-            if (file == null) return;
-            selectedfile = file;
-            pdfreader = new PdfReader(inputfile);
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                PdfCopy copy;
-                try {
-                    copy = new PdfCopy(document, fos);
-                } catch (DocumentException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to create PDF writer", ex);
-                    return;
-                }
-                document.open();
-
-                Set<Integer> pagesToRemove = new HashSet<>();
-                for (int[] range : pageRanges) {
-                    for (int j = range[0]; j <= range[1]; j++) {
-                        pagesToRemove.add(j);
-                    }
-                }
-
-                for (int i = 1; i <= pdfreader.getNumberOfPages(); i++) {
-                    if (!pagesToRemove.contains(i)) {
-                        try {
-                            copy.addPage(copy.getImportedPage(pdfreader, i));
-                        } catch (BadPdfFormatException ex) {
-                            LOGGER.log(Level.WARNING, "Skipping malformed page " + i, ex);
-                        }
-                    }
-                }
-
-                document.close();
-            }
+            new PdfPageRemoveService().removePages(inputfile, pageRanges, file);
             Openfile openfile = new Openfile();
-            openfile.openm(selectedfile);
+            openfile.openm(file);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Failed to remove pages from PDF", ex);
             a.badpdfcall();
-        } finally {
-            if (pdfreader != null) pdfreader.close();
         }
     }
 
