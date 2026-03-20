@@ -1,21 +1,10 @@
 package www.rdm.com;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.pdf.BadPdfFormatException;
-import com.itextpdf.text.pdf.PdfCopy;
 import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.parser.PdfTextExtractor;
-import com.itextpdf.text.pdf.parser.TextExtractionStrategy;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.event.ActionEvent;
@@ -27,7 +16,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 class Chapter {
@@ -37,70 +25,38 @@ class Chapter {
     Project200 a = new Project200();
     GridPane grid2 = new GridPane();
     boolean check = false;
-    static TextField tf1;
-    public static String filename, chaptername, realchaptername, clear;
-    File file;
-
-    public static int compp = 0, compl = 0;
-    public static float max = 0;
-    public static int startforinput, endforinput;
-    public static Map<Integer, Map<Integer, Float>> ara = new HashMap<>();
-    public static Map<Integer, Integer> ara1 = new HashMap<>();
-    public static Map<Integer, Map<Integer, String>> sara = new HashMap<>();
+    TextField tf1;
+    String filename = null;
+    String realchaptername = null;
 
     void splitbychapter() throws IOException {
-        PdfReader reader = new PdfReader(filename);
-        try {
-            SemTextExtractionStrategy semtextextractionstrategy = new SemTextExtractionStrategy();
-            try (PrintWriter out = new PrintWriter(new FileOutputStream(filename + ".txt"))) {
-                for (int i = 1; i <= reader.getNumberOfPages(); i++) {
-                    compp = i;
-                    compl = 0;
-                    out.println(PdfTextExtractor.getTextFromPage(reader, i, (TextExtractionStrategy) semtextextractionstrategy));
-                }
-                out.flush();
-            }
-        } finally {
-            reader.close();
-        }
+        PdfChapterSplitService service = new PdfChapterSplitService();
+        int[] pages = service.findChapter(filename, realchaptername);
 
-        File filet = new File(filename + ".txt");
-        filet.delete();
-
-        check = false;
-
-        for (int i = startforinput + 1; i <= compp; i++) {
-            if (check == true)
-                break;
-            for (int j = 1; j <= ara1.getOrDefault(i, 0); j++) {
-                if (ara.getOrDefault(i, Collections.emptyMap()).getOrDefault(j, 0.0f) == max) {
-                    endforinput = i - 1;
-                    check = true;
-                    break;
-                }
-            }
-        }
-
-        if (startforinput == 0) {
+        if (pages == null) {
             Stage prstage = new Stage();
-            Yourchoice yourchoice = new Yourchoice();
+            Yourchoice yourchoice = new Yourchoice(realchaptername);
             try {
                 yourchoice.start(prstage);
             } catch (Exception ex) {
                 LOGGER.log(Level.WARNING, "Failed to show chapter-not-found dialog", ex);
             }
         } else {
-            file = a.savefile();
+            File file = a.savefile();
             if (file == null) return;
-            split();
+            try {
+                service.extractPages(filename, pages[0], pages[1], file);
+                Openfile openfile = new Openfile();
+                openfile.openm(file);
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "Failed to split PDF", ex);
+                a.badpdfcall();
+            }
         }
 
         filename = null;
         check = true;
         border.setLeft(gridbybutton());
-        startforinput = 0;
-        endforinput = 0;
-        sara.clear();
     }
 
     GridPane gridbybutton() {
@@ -112,11 +68,8 @@ class Chapter {
         grid2.add(btn, 0, 1);
         btn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                if ((tf1.getText() != null && !tf1.getText().isEmpty())) {
-                    chaptername = tf1.getText();
-                    realchaptername = chaptername;
-                    chaptername = chaptername.replaceAll("\\s+", "");
-                    chaptername = chaptername.toLowerCase();
+                if (tf1.getText() != null && !tf1.getText().isEmpty()) {
+                    realchaptername = tf1.getText();
                     try {
                         splitbychapter();
                     } catch (IOException ex) {
@@ -190,40 +143,5 @@ class Chapter {
         });
 
         return new Scene(border, 420, 500);
-    }
-
-    private void split() {
-        File selectedfile = null;
-        Document document = new Document();
-        PdfReader pdfreader = null;
-        try {
-            selectedfile = file;
-            pdfreader = new PdfReader(filename);
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                PdfCopy copy;
-                try {
-                    copy = new PdfCopy(document, fos);
-                } catch (DocumentException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to create PDF writer", ex);
-                    return;
-                }
-                document.open();
-                for (int i = startforinput; i <= endforinput; i++) {
-                    try {
-                        copy.addPage(copy.getImportedPage(pdfreader, i));
-                    } catch (BadPdfFormatException ex) {
-                        LOGGER.log(Level.WARNING, "Skipping malformed page " + i, ex);
-                    }
-                }
-                document.close();
-            }
-            Openfile openfile = new Openfile();
-            openfile.openm(selectedfile);
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Failed to split PDF", ex);
-            a.badpdfcall();
-        } finally {
-            if (pdfreader != null) pdfreader.close();
-        }
     }
 }

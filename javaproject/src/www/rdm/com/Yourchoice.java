@@ -9,16 +9,19 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 class Yourchoice extends Application {
+    private final String realchaptername;
 
-    Project200 a = new Project200();
-    Chapter b = new Chapter();
+    Yourchoice(String realchaptername) {
+        this.realchaptername = realchaptername;
+    }
 
     @Override
     public void start(Stage primaryStage) {
+        Project200 a = new Project200();
         GridPane grid = a.gridinfo();
 
         Text t = new Text();
-        t.setText("Sorry!\nWe have find no section in this Pdf\nNamed " + b.realchaptername);
+        t.setText("Sorry!\nWe have find no section in this Pdf\nNamed " + realchaptername);
         t.setFont(Font.font("Verdana", 18));
         t.setFill(Color.RED);
         grid.add(t, 0, 0);

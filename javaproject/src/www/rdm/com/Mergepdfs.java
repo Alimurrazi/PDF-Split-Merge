@@ -1,12 +1,9 @@
 package www.rdm.com;
 
-import com.itextpdf.text.Document;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import com.itextpdf.text.pdf.PdfCopy;
 import com.itextpdf.text.pdf.PdfReader;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -34,33 +31,12 @@ class Mergepdfs {
     GridPane grid1 = new GridPane();
 
     void mergefiles() {
-        File selectedfile = null;
+        File file = a.savefile();
+        if (file == null) return;
         try {
-            Document document = new Document();
-            File file = a.savefile();
-            if (file == null) return;
-            selectedfile = file;
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                PdfCopy pdfcopy = new PdfCopy(document, fos);
-                document.open();
-                for (String filepath : filelist) {
-                    PdfReader pdfreader = new PdfReader(filepath);
-                    try {
-                        for (int j = 1; j <= pdfreader.getNumberOfPages(); j++) {
-                            try {
-                                pdfcopy.addPage(pdfcopy.getImportedPage(pdfreader, j));
-                            } catch (Exception e) {
-                                LOGGER.log(Level.WARNING, "Skipping malformed page " + j + " in " + filepath, e);
-                            }
-                        }
-                    } finally {
-                        pdfreader.close();
-                    }
-                }
-                document.close();
-            }
+            new PdfMergeService().merge(filelist, file);
             Openfile openfile = new Openfile();
-            openfile.openm(selectedfile);
+            openfile.openm(file);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to merge PDFs", e);
             a.badpdfcall();

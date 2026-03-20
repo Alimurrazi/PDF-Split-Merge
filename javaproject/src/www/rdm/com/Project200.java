@@ -1,12 +1,6 @@
 package www.rdm.com;
 
-import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.pdf.BadPdfFormatException;
-import com.itextpdf.text.pdf.PdfCopy;
-import com.itextpdf.text.pdf.PdfReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -87,44 +81,17 @@ public class Project200 extends Application {
     }
 
     void spliteandmerge(String inputfile) {
-        File selectedfile = null;
-        Document document = new Document();
-        PdfReader pdfreader = null;
+        Path path = Paths.get(filename);
+        pdfpath = path.getFileName();
+        File file = savefile();
+        if (file == null) return;
         try {
-            Path path = Paths.get(filename);
-            pdfpath = path.getFileName();
-            File file = savefile();
-            if (file == null) return;
-            selectedfile = file;
-            pdfreader = new PdfReader(inputfile);
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                PdfCopy copy;
-                try {
-                    copy = new PdfCopy(document, fos);
-                } catch (DocumentException ex) {
-                    LOGGER.log(Level.SEVERE, "Failed to create PDF writer", ex);
-                    return;
-                }
-                document.open();
-                for (int[] range : pageRanges) {
-                    for (int j = range[0]; j <= range[1]; j++) {
-                        try {
-                            copy.addPage(copy.getImportedPage(pdfreader, j));
-                        } catch (BadPdfFormatException ex) {
-                            LOGGER.log(Level.WARNING, "Skipping malformed page " + j, ex);
-                            badpdfcall();
-                        }
-                    }
-                }
-                document.close();
-            }
+            new PdfSplitService().split(inputfile, pageRanges, file);
             Openfile openfile = new Openfile();
-            openfile.openm(selectedfile);
+            openfile.openm(file);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Failed to split/merge PDF", ex);
             badpdfcall();
-        } finally {
-            if (pdfreader != null) pdfreader.close();
         }
     }
 
