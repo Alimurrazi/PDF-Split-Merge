@@ -5,35 +5,35 @@ import java.util.HashMap;
 import java.util.Map;
 
 class TextExtractionState {
-    final Map<Integer, Map<Integer, Float>> ara = new HashMap<>();
-    final Map<Integer, Integer> ara1 = new HashMap<>();
-    final Map<Integer, Map<Integer, String>> sara = new HashMap<>();
-    int compp = 0, compl = 0;
-    float max = 0;
-    int startforinput = 0, endforinput = 0;
-    String chaptername = "";
+    final Map<Integer, Map<Integer, Float>> fontSizes = new HashMap<>();
+    final Map<Integer, Integer> columnCounts = new HashMap<>();
+    final Map<Integer, Map<Integer, String>> textContent = new HashMap<>();
+    int currentPage = 0, currentColumn = 0;
+    float maxFontSize = 0;
+    int chapterStartPage = 0, chapterEndPage = 0;
+    String normalizedChapterName = "";
 
-    float getAra(int page, int col) {
-        return ara.getOrDefault(page, Collections.emptyMap()).getOrDefault(col, 0.0f);
+    float getFontSize(int page, int col) {
+        return fontSizes.getOrDefault(page, Collections.emptyMap()).getOrDefault(col, 0.0f);
     }
 
-    String getSara(int page, int col) {
-        return sara.getOrDefault(page, Collections.emptyMap()).getOrDefault(col, "");
+    String getText(int page, int col) {
+        return textContent.getOrDefault(page, Collections.emptyMap()).getOrDefault(col, "");
     }
 
-    void putAra(int page, int col, float value) {
-        ara.computeIfAbsent(page, k -> new HashMap<>()).put(col, value);
+    void putFontSize(int page, int col, float value) {
+        fontSizes.computeIfAbsent(page, k -> new HashMap<>()).put(col, value);
     }
 
-    void putSara(int page, int col, String value) {
-        sara.computeIfAbsent(page, k -> new HashMap<>()).put(col, value);
+    void putText(int page, int col, String value) {
+        textContent.computeIfAbsent(page, k -> new HashMap<>()).put(col, value);
     }
 
-    void putAra1(int page, int col) {
-        ara1.put(page, col);
+    void putColumnCount(int page, int col) {
+        columnCounts.put(page, col);
     }
 
-    int getAra1(int page) {
-        return ara1.getOrDefault(page, 0);
+    int getColumnCount(int page) {
+        return columnCounts.getOrDefault(page, 0);
     }
 }

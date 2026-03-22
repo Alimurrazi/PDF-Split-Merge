@@ -24,50 +24,51 @@ import javafx.stage.Stage;
 class Removepage {
     private static final Logger LOGGER = Logger.getLogger(Removepage.class.getName());
 
-    private final Project200 a = new Project200();
+    private final Project200 project = new Project200();
     private GridPane grid = new GridPane();
     private final List<int[]> pageRanges = new ArrayList<>();
     private boolean beforeend = false;
     private String inputfile = null;
-    private int b = 3, coun = 1, d = 0;
+    private int nextGridRow = 3;
+    private boolean refreshPending = false, headerAdded = false;
 
     private GridPane gridbybutton() {
-        if (coun == 1) {
+        if (!headerAdded) {
             Label text = new Label("Contributing Pages");
             text.setFont(new Font("Arial", 25));
             grid.add(text, 0, 1);
-            coun = 2;
+            headerAdded = true;
         }
 
         Button okbutton = new Button("OK");
         okbutton.setStyle("-fx-font: 12 arial; -fx-base: #b6e7c9;");
-        TextField tf1 = new TextField();
-        TextField tf2 = new TextField();
-        tf1.setPrefWidth(100);
-        tf2.setPrefWidth(100);
-        tf1.setPromptText("From");
-        tf2.setPromptText("To");
+        TextField fromField = new TextField();
+        TextField toField = new TextField();
+        fromField.setPrefWidth(100);
+        toField.setPrefWidth(100);
+        fromField.setPromptText("From");
+        toField.setPromptText("To");
 
         Label errorLabel = new Label();
         errorLabel.setStyle("-fx-text-fill: red;");
 
         HBox hbox1 = new HBox();
         hbox1.setSpacing(10);
-        hbox1.getChildren().addAll(tf1, tf2, okbutton, errorLabel);
-        grid.add(hbox1, 0, b);
+        hbox1.getChildren().addAll(fromField, toField, okbutton, errorLabel);
+        grid.add(hbox1, 0, nextGridRow);
 
         okbutton.setOnAction(new EventHandler<ActionEvent>() {
             int from, to;
             @Override
             public void handle(ActionEvent e) {
                 errorLabel.setText("");
-                if (tf1.getText() == null || tf1.getText().isEmpty() || tf2.getText() == null || tf2.getText().isEmpty()) {
+                if (fromField.getText() == null || fromField.getText().isEmpty() || toField.getText() == null || toField.getText().isEmpty()) {
                     errorLabel.setText("Both fields are required");
                     return;
                 }
                 try {
-                    from = Integer.parseInt(tf1.getText().trim());
-                    to = Integer.parseInt(tf2.getText().trim());
+                    from = Integer.parseInt(fromField.getText().trim());
+                    to = Integer.parseInt(toField.getText().trim());
                 } catch (NumberFormatException ex) {
                     errorLabel.setText("Pages must be numbers");
                     return;
@@ -84,20 +85,20 @@ class Removepage {
                 beforeend = true;
             }
         });
-        b = b + 1;
+        nextGridRow = nextGridRow + 1;
 
-        if (d == 1) {
+        if (refreshPending) {
             grid.getChildren().clear();
             pageRanges.clear();
-            d = 0;
-            coun = 1;
-            b = 2;
+            refreshPending = false;
+            headerAdded = false;
+            nextGridRow = 2;
         }
         return grid;
     }
 
     private void select(String inputfile) {
-        File file = a.savefile();
+        File file = project.savefile();
         if (file == null) return;
         try {
             new PdfPageRemoveService().removePages(inputfile, pageRanges, file);
@@ -105,13 +106,13 @@ class Removepage {
             openfile.openm(file);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Failed to remove pages from PDF", ex);
-            a.badpdfcall();
+            project.badpdfcall();
         }
     }
 
     Scene remove(Stage stage, Scene homeScene) {
         BorderPane border = new BorderPane();
-        grid = a.gridinfo();
+        grid = project.gridinfo();
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
@@ -137,10 +138,10 @@ class Removepage {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                    inputfile = a.filepath();
+                    inputfile = project.filepath();
                     if (inputfile == null) return;
                     Path path = Paths.get(inputfile);
-                    a.pdfpath = path.getFileName();
+                    project.pdfpath = path.getFileName();
                     PdfReader pdfreader = new PdfReader(inputfile);
                     try {
                     } finally {
@@ -148,7 +149,7 @@ class Removepage {
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
-                    a.badpdfcall();
+                    project.badpdfcall();
                 }
             }
         });
@@ -171,7 +172,7 @@ class Removepage {
 
         btn4.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                d = 1;
+                refreshPending = true;
                 border.setLeft(gridbybutton());
             }
         });

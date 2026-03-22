@@ -22,27 +22,27 @@ class Chapter {
     private static final Logger LOGGER = Logger.getLogger(Chapter.class.getName());
 
     BorderPane border = new BorderPane();
-    Project200 a = new Project200();
-    GridPane grid2 = new GridPane();
-    boolean check = false;
-    TextField tf1;
+    Project200 project = new Project200();
+    GridPane contentGrid = new GridPane();
+    boolean refreshPending = false;
+    TextField chapterNameField;
     String filename = null;
-    String realchaptername = null;
+    String chapterName = null;
 
     void splitbychapter() throws IOException {
         PdfChapterSplitService service = new PdfChapterSplitService();
-        int[] pages = service.findChapter(filename, realchaptername);
+        int[] pages = service.findChapter(filename, chapterName);
 
         if (pages == null) {
             Stage prstage = new Stage();
-            Yourchoice yourchoice = new Yourchoice(realchaptername);
+            Yourchoice yourchoice = new Yourchoice(chapterName);
             try {
                 yourchoice.start(prstage);
             } catch (Exception ex) {
                 LOGGER.log(Level.WARNING, "Failed to show chapter-not-found dialog", ex);
             }
         } else {
-            File file = a.savefile();
+            File file = project.savefile();
             if (file == null) return;
             try {
                 service.extractPages(filename, pages[0], pages[1], file);
@@ -50,46 +50,46 @@ class Chapter {
                 openfile.openm(file);
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, "Failed to split PDF", ex);
-                a.badpdfcall();
+                project.badpdfcall();
             }
         }
 
         filename = null;
-        check = true;
+        refreshPending = true;
         border.setLeft(gridbybutton());
     }
 
     GridPane gridbybutton() {
         Button btn = new Button("Start");
-        tf1 = new TextField();
-        tf1.setPrefWidth(100);
-        tf1.setPromptText("Chapter's Name");
-        grid2.add(tf1, 0, 0);
-        grid2.add(btn, 0, 1);
+        chapterNameField = new TextField();
+        chapterNameField.setPrefWidth(100);
+        chapterNameField.setPromptText("Chapter's Name");
+        contentGrid.add(chapterNameField, 0, 0);
+        contentGrid.add(btn, 0, 1);
         btn.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
-                if (tf1.getText() != null && !tf1.getText().isEmpty()) {
-                    realchaptername = tf1.getText();
+                if (chapterNameField.getText() != null && !chapterNameField.getText().isEmpty()) {
+                    chapterName = chapterNameField.getText();
                     try {
                         splitbychapter();
                     } catch (IOException ex) {
                         LOGGER.log(Level.SEVERE, "Failed to split PDF by chapter", ex);
-                        a.badpdfcall();
+                        project.badpdfcall();
                     }
                 }
             }
         });
 
-        if (check == true) {
-            check = false;
-            grid2.getChildren().clear();
+        if (refreshPending) {
+            refreshPending = false;
+            contentGrid.getChildren().clear();
         }
-        return grid2;
+        return contentGrid;
     }
 
     Scene chapterstring(Stage stage, Scene parentScene) throws NoClassDefFoundError {
-        Project200 a = new Project200();
-        grid2 = a.gridinfo();
+        Project200 project = new Project200();
+        contentGrid = project.gridinfo();
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
@@ -111,10 +111,10 @@ class Chapter {
             public void handle(ActionEvent event) {
                 filename = null;
                 try {
-                    filename = a.filepath();
+                    filename = project.filepath();
                     if (filename == null) return;
                     Path pathp = Paths.get(filename);
-                    a.pdfpath = pathp.getFileName();
+                    project.pdfpath = pathp.getFileName();
                     PdfReader pdfreader = new PdfReader(filename);
                     try {
                         border.setLeft(gridbybutton());
@@ -123,7 +123,7 @@ class Chapter {
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
-                    a.badpdfcall();
+                    project.badpdfcall();
                 }
             }
         });
@@ -131,7 +131,7 @@ class Chapter {
         btn2.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 filename = null;
-                check = true;
+                refreshPending = true;
                 border.setLeft(gridbybutton());
             }
         });

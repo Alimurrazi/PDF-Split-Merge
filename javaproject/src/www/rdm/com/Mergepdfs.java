@@ -25,13 +25,13 @@ class Mergepdfs {
 
     BorderPane border = new BorderPane();
     List<String> filelist = new ArrayList<>();
-    int filenamer;
-    Project200 a = new Project200();
-    int check = 0;
-    GridPane grid1 = new GridPane();
+    int fileListRow;
+    Project200 project = new Project200();
+    boolean refreshPending = false;
+    GridPane fileListGrid = new GridPane();
 
     void mergefiles() {
-        File file = a.savefile();
+        File file = project.savefile();
         if (file == null) return;
         try {
             new PdfMergeService().merge(filelist, file);
@@ -39,23 +39,23 @@ class Mergepdfs {
             openfile.openm(file);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to merge PDFs", e);
-            a.badpdfcall();
+            project.badpdfcall();
         }
     }
 
     GridPane gridbybutton(Text t) {
         t.setFont(new Font(20));
-        grid1.add(t, 0, filenamer);
-        filenamer++;
-        if (check == 1) {
-            check = 0;
-            grid1.getChildren().clear();
+        fileListGrid.add(t, 0, fileListRow);
+        fileListRow++;
+        if (refreshPending) {
+            refreshPending = false;
+            fileListGrid.getChildren().clear();
         }
-        return grid1;
+        return fileListGrid;
     }
 
     Scene merge(Stage stage, Scene homeScene) {
-        grid1 = a.gridinfo();
+        fileListGrid = project.gridinfo();
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
@@ -65,19 +65,19 @@ class Mergepdfs {
         hbox.getChildren().addAll(btn1, btn2, btn3);
         hbox.setStyle("-fx-background-color: #336699;");
         border.setTop(hbox);
-        border.setLeft(grid1);
+        border.setLeft(fileListGrid);
 
-        filenamer = 1;
+        fileListRow = 1;
 
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                Project200 project200 = new Project200();
+                Project200 p = new Project200();
                 try {
-                    String filename = project200.filepath();
+                    String filename = p.filepath();
                     if (filename == null) return;
                     Path pathp = Paths.get(filename);
-                    a.pdfpath = pathp.getFileName();
+                    project.pdfpath = pathp.getFileName();
                     PdfReader pdfreader = new PdfReader(filename);
                     try {
                         filelist.add(filename);
@@ -90,7 +90,7 @@ class Mergepdfs {
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
-                    a.badpdfcall();
+                    project.badpdfcall();
                 }
             }
         });
@@ -105,10 +105,10 @@ class Mergepdfs {
         btn3.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 filelist.clear();
-                filenamer = 1;
+                fileListRow = 1;
                 Text t1 = new Text();
                 t1.setText(null);
-                check = 1;
+                refreshPending = true;
                 border.setLeft(gridbybutton(t1));
             }
         });

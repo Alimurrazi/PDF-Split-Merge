@@ -39,24 +39,24 @@ class SemTextExtractionStrategy implements TextExtractionStrategy {
             text = text.replaceAll("\\s+", "");
             text = text.toLowerCase();
 
-            float currentAra = state.getAra(state.compp, state.compl);
-            if (curFontSize != currentAra) {
-                state.compl = state.compl + 1;
-                state.putAra(state.compp, state.compl, curFontSize);
-                state.putSara(state.compp, state.compl, text);
-                state.putAra1(state.compp, state.compl);
+            float existingFontSize = state.getFontSize(state.currentPage, state.currentColumn);
+            if (curFontSize != existingFontSize) {
+                state.currentColumn = state.currentColumn + 1;
+                state.putFontSize(state.currentPage, state.currentColumn, curFontSize);
+                state.putText(state.currentPage, state.currentColumn, text);
+                state.putColumnCount(state.currentPage, state.currentColumn);
             } else {
-                String existing = state.getSara(state.compp, state.compl);
-                state.putSara(state.compp, state.compl, existing + text);
-                state.putAra1(state.compp, state.compl);
+                String existing = state.getText(state.currentPage, state.currentColumn);
+                state.putText(state.currentPage, state.currentColumn, existing + text);
+                state.putColumnCount(state.currentPage, state.currentColumn);
             }
 
-            String currentSara = state.getSara(state.compp, state.compl);
-            if (state.chaptername.equals(currentSara)) {
-                float currentFontSize = state.getAra(state.compp, state.compl);
-                if (currentFontSize > state.max) {
-                    state.max = currentFontSize;
-                    state.startforinput = state.compp;
+            String currentText = state.getText(state.currentPage, state.currentColumn);
+            if (state.normalizedChapterName.equals(currentText)) {
+                float currentFontSize = state.getFontSize(state.currentPage, state.currentColumn);
+                if (currentFontSize > state.maxFontSize) {
+                    state.maxFontSize = currentFontSize;
+                    state.chapterStartPage = state.currentPage;
                 }
             }
         } catch (Exception e) {
