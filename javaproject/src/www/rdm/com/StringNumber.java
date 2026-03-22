@@ -21,15 +21,14 @@ class StringNumber {
         Button btn1 = new Button("By Page Number");
         Button btn2 = new Button("By Chapter's Name");
         hbox.getChildren().addAll(btn1, btn2);
-        hbox.setStyle("-fx-background-color: #336699;");
+        hbox.setStyle("-fx-background-color: #1976D2;");
         border.setTop(hbox);
 
         HBox hbox1 = new HBox();
         hbox1.setPadding(new Insets(0, 10, 10, 10));
         hbox1.setSpacing(10);
-        Button back = new Button();
-        back.setText("back");
-        back.setStyle("-fx-font: 18 arial; -fx-base: #b6e7c9;");
+        Button back = new Button("Back");
+        back.setStyle("-fx-font: 14 arial;");
         hbox1.getChildren().add(back);
         border.setBottom(hbox1);
 

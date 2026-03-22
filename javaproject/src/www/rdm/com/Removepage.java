@@ -8,13 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -34,14 +40,14 @@ class Removepage {
 
     private GridPane gridbybutton() {
         if (!headerAdded) {
-            Label text = new Label("Contributing Pages");
+            Label text = new Label("Pages to Remove");
             text.setFont(new Font("Arial", 25));
             grid.add(text, 0, 1);
             headerAdded = true;
         }
 
         Button okbutton = new Button("OK");
-        okbutton.setStyle("-fx-font: 12 arial; -fx-base: #b6e7c9;");
+        okbutton.setStyle("-fx-font: 12 arial;");
         TextField fromField = new TextField();
         TextField toField = new TextField();
         fromField.setPrefWidth(100);
@@ -97,42 +103,77 @@ class Removepage {
         return grid;
     }
 
-    private void select(String inputfile) {
-        File file = project.savefile();
-        if (file == null) return;
-        try {
-            new PdfPageRemoveService().removePages(inputfile, pageRanges, file);
-            Openfile openfile = new Openfile();
-            openfile.openm(file);
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, "Failed to remove pages from PDF", ex);
-            project.badpdfcall();
-        }
-    }
-
     Scene remove(Stage stage, Scene homeScene) {
         BorderPane border = new BorderPane();
         grid = project.gridinfo();
+
+        // Toolbar
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
-        hbox.setStyle("-fx-background-color: #336699;");
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        hbox.setStyle("-fx-background-color: #1976D2;");
 
         Button btn1 = new Button("Select PDF");
         Button btn2 = new Button("Add Pages");
         Button btn3 = new Button("Finish");
         Button btn4 = new Button("Refresh");
-        Button btn5 = new Button("Back");
-        hbox.getChildren().addAll(btn1, btn2, btn3, btn4);
 
-        btn5.setStyle("-fx-font: 18 arial; -fx-base: #b6e7c9;");
-        HBox hbox1 = new HBox();
-        hbox1.setPadding(new Insets(0, 10, 10, 10));
-        hbox1.setSpacing(10);
-        hbox1.getChildren().add(btn5);
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setPrefSize(22, 22);
+        progress.setVisible(false);
+
+        hbox.getChildren().addAll(btn1, btn2, btn3, btn4, progress);
+
+        // Bottom bar: Back + status
+        HBox bottomBox = new HBox();
+        bottomBox.setPadding(new Insets(5, 10, 10, 10));
+        bottomBox.setSpacing(15);
+        bottomBox.setAlignment(Pos.CENTER_LEFT);
+
+        Button btn5 = new Button("Back");
+        btn5.setStyle("-fx-font: 14 arial;");
+
+        Label statusLabel = new Label("No file selected");
+        statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
+
+        bottomBox.getChildren().addAll(btn5, statusLabel);
 
         border.setTop(hbox);
-        border.setBottom(hbox1);
+        border.setBottom(bottomBox);
+
+        // Drag & drop: drop a PDF to select it as input
+        border.setOnDragOver((DragEvent event) -> {
+            if (event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(TransferMode.COPY);
+            }
+            event.consume();
+        });
+        border.setOnDragDropped((DragEvent event) -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                File dropped = db.getFiles().stream()
+                        .filter(f -> f.getName().toLowerCase().endsWith(".pdf"))
+                        .findFirst().orElse(null);
+                if (dropped != null) {
+                    try {
+                        PdfReader reader = new PdfReader(dropped.getAbsolutePath());
+                        reader.close();
+                        inputfile = dropped.getAbsolutePath();
+                        project.pdfpath = Paths.get(inputfile).getFileName();
+                        statusLabel.setText("Selected: " + dropped.getName());
+                        statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
+                        success = true;
+                    } catch (Exception e) {
+                        LOGGER.log(Level.WARNING, "Dropped file is not a valid PDF", e);
+                        project.badpdfcall();
+                    }
+                }
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
 
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -144,6 +185,8 @@ class Removepage {
                     project.pdfpath = path.getFileName();
                     PdfReader pdfreader = new PdfReader(inputfile);
                     try {
+                        statusLabel.setText("Selected: " + path.getFileName());
+                        statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
                     } finally {
                         pdfreader.close();
                     }
@@ -164,15 +207,51 @@ class Removepage {
         btn3.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                if (inputfile != null && beforeend == true) {
-                    select(inputfile);
+                if (inputfile == null) {
+                    statusLabel.setText("Please select a PDF first");
+                    statusLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-weight: bold;");
+                    return;
                 }
+                if (!beforeend) {
+                    statusLabel.setText("Please add at least one page range");
+                    statusLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-weight: bold;");
+                    return;
+                }
+                File file = project.savefile();
+                if (file == null) return;
+
+                btn3.setDisable(true);
+                progress.setVisible(true);
+                String currentInput = inputfile;
+                Task<Void> task = new Task<>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        new PdfPageRemoveService().removePages(currentInput, pageRanges, file);
+                        return null;
+                    }
+                };
+                task.setOnSucceeded(ev -> {
+                    progress.setVisible(false);
+                    btn3.setDisable(false);
+                    new Openfile().openm(file);
+                });
+                task.setOnFailed(ev -> {
+                    progress.setVisible(false);
+                    btn3.setDisable(false);
+                    LOGGER.log(Level.SEVERE, "Failed to remove pages from PDF", task.getException());
+                    project.badpdfcall();
+                });
+                new Thread(task).start();
             }
         });
 
         btn4.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
+                inputfile = null;
+                beforeend = false;
                 refreshPending = true;
+                statusLabel.setText("No file selected");
+                statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
                 border.setLeft(gridbybutton());
             }
         });

@@ -8,11 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -30,19 +37,6 @@ class Mergepdfs {
     boolean refreshPending = false;
     GridPane fileListGrid = new GridPane();
 
-    void mergefiles() {
-        File file = project.savefile();
-        if (file == null) return;
-        try {
-            new PdfMergeService().merge(filelist, file);
-            Openfile openfile = new Openfile();
-            openfile.openm(file);
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to merge PDFs", e);
-            project.badpdfcall();
-        }
-    }
-
     GridPane gridbybutton(Text t) {
         t.setFont(new Font(20));
         fileListGrid.add(t, 0, fileListRow);
@@ -56,18 +50,76 @@ class Mergepdfs {
 
     Scene merge(Stage stage, Scene homeScene) {
         fileListGrid = project.gridinfo();
+
+        // Toolbar
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
-        Button btn1 = new Button("Select Pdf");
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        hbox.setStyle("-fx-background-color: #1976D2;");
+
+        Button btn1 = new Button("Select PDF");
         Button btn2 = new Button("Finish");
         Button btn3 = new Button("Refresh");
-        hbox.getChildren().addAll(btn1, btn2, btn3);
-        hbox.setStyle("-fx-background-color: #336699;");
+
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setPrefSize(22, 22);
+        progress.setVisible(false);
+
+        hbox.getChildren().addAll(btn1, btn2, btn3, progress);
         border.setTop(hbox);
         border.setLeft(fileListGrid);
 
         fileListRow = 1;
+
+        // Bottom bar: Back + status
+        HBox bottomBox = new HBox();
+        bottomBox.setPadding(new Insets(5, 10, 10, 10));
+        bottomBox.setSpacing(15);
+        bottomBox.setAlignment(Pos.CENTER_LEFT);
+
+        Button back = new Button("Back");
+        back.setStyle("-fx-font: 14 arial;");
+
+        Label statusLabel = new Label("No files added");
+        statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
+
+        bottomBox.getChildren().addAll(back, statusLabel);
+        border.setBottom(bottomBox);
+
+        // Drag & drop: each dropped PDF is added to the merge list
+        border.setOnDragOver((DragEvent event) -> {
+            if (event.getDragboard().hasFiles()) {
+                event.acceptTransferModes(TransferMode.COPY);
+            }
+            event.consume();
+        });
+        border.setOnDragDropped((DragEvent event) -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if (db.hasFiles()) {
+                for (File droppedFile : db.getFiles()) {
+                    if (droppedFile.getName().toLowerCase().endsWith(".pdf")) {
+                        String path = droppedFile.getAbsolutePath();
+                        try {
+                            PdfReader reader = new PdfReader(path);
+                            reader.close();
+                            filelist.add(path);
+                            Text t = new Text(filelist.size() + ".  " + droppedFile.getName());
+                            border.setLeft(gridbybutton(t));
+                        } catch (Exception e) {
+                            LOGGER.log(Level.WARNING, "Dropped file is not a valid PDF: " + path, e);
+                        }
+                        success = true;
+                    }
+                }
+                int count = filelist.size();
+                statusLabel.setText(count + " file" + (count == 1 ? "" : "s") + " added");
+                statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
 
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -83,8 +135,11 @@ class Mergepdfs {
                         filelist.add(filename);
                         Text t = new Text();
                         Path path = Paths.get(filename);
-                        t.setText(filelist.size() + "." + "  " + path.getFileName());
+                        t.setText(filelist.size() + ".  " + path.getFileName());
                         border.setLeft(gridbybutton(t));
+                        int count = filelist.size();
+                        statusLabel.setText(count + " file" + (count == 1 ? "" : "s") + " added");
+                        statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
                     } finally {
                         pdfreader.close();
                     }
@@ -98,7 +153,35 @@ class Mergepdfs {
         btn2.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                mergefiles();
+                if (filelist.isEmpty()) {
+                    statusLabel.setText("Please add at least one PDF first");
+                    statusLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-weight: bold;");
+                    return;
+                }
+                File file = project.savefile();
+                if (file == null) return;
+
+                btn2.setDisable(true);
+                progress.setVisible(true);
+                Task<Void> task = new Task<>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        new PdfMergeService().merge(filelist, file);
+                        return null;
+                    }
+                };
+                task.setOnSucceeded(ev -> {
+                    progress.setVisible(false);
+                    btn2.setDisable(false);
+                    new Openfile().openm(file);
+                });
+                task.setOnFailed(ev -> {
+                    progress.setVisible(false);
+                    btn2.setDisable(false);
+                    LOGGER.log(Level.SEVERE, "Failed to merge PDFs", task.getException());
+                    project.badpdfcall();
+                });
+                new Thread(task).start();
             }
         });
 
@@ -110,17 +193,10 @@ class Mergepdfs {
                 t1.setText(null);
                 refreshPending = true;
                 border.setLeft(gridbybutton(t1));
+                statusLabel.setText("No files added");
+                statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
             }
         });
-
-        HBox hbox1 = new HBox();
-        hbox1.setPadding(new Insets(0, 10, 10, 10));
-        hbox1.setSpacing(10);
-        Button back = new Button();
-        back.setText("back");
-        back.setStyle("-fx-font: 18 arial; -fx-base: #b6e7c9;");
-        hbox1.getChildren().add(back);
-        border.setBottom(hbox1);
 
         back.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
