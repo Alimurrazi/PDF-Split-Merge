@@ -22,7 +22,7 @@ class PdfChapterSplitService {
      */
     int[] findChapter(String inputPath, String chapterName) throws IOException {
         TextExtractionState state = new TextExtractionState();
-        state.chaptername = chapterName.replaceAll("\\s+", "").toLowerCase();
+        state.normalizedChapterName = chapterName.replaceAll("\\s+", "").toLowerCase();
 
         PdfReader reader = new PdfReader(inputPath);
         try {
@@ -30,8 +30,8 @@ class PdfChapterSplitService {
             File tempFile = File.createTempFile("pdf_chapter", ".txt");
             try (PrintWriter out = new PrintWriter(new FileOutputStream(tempFile))) {
                 for (int i = 1; i <= reader.getNumberOfPages(); i++) {
-                    state.compp = i;
-                    state.compl = 0;
+                    state.currentPage = i;
+                    state.currentColumn = 0;
                     out.println(PdfTextExtractor.getTextFromPage(reader, i, (TextExtractionStrategy) strategy));
                 }
                 out.flush();
@@ -42,24 +42,24 @@ class PdfChapterSplitService {
             reader.close();
         }
 
-        if (state.startforinput == 0) {
+        if (state.chapterStartPage == 0) {
             return null;
         }
 
         // Find end of chapter: next heading at the same font size
         boolean found = false;
-        for (int i = state.startforinput + 1; i <= state.compp; i++) {
+        for (int i = state.chapterStartPage + 1; i <= state.currentPage; i++) {
             if (found) break;
-            for (int j = 1; j <= state.getAra1(i); j++) {
-                if (state.getAra(i, j) == state.max) {
-                    state.endforinput = i - 1;
+            for (int j = 1; j <= state.getColumnCount(i); j++) {
+                if (state.getFontSize(i, j) == state.maxFontSize) {
+                    state.chapterEndPage = i - 1;
                     found = true;
                     break;
                 }
             }
         }
 
-        return new int[]{state.startforinput, state.endforinput};
+        return new int[]{state.chapterStartPage, state.chapterEndPage};
     }
 
     void extractPages(String inputPath, int from, int to, File outputFile) throws Exception {
