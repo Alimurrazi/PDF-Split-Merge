@@ -164,16 +164,11 @@ public class Project200 extends Application {
 
         Button btn1 = new Button("Select PDF");
         Button btn2 = new Button("Add Pages");
-        Button btn3 = new Button("Finish");
         Button btn4 = new Button("Refresh");
 
-        ProgressIndicator progress = new ProgressIndicator();
-        progress.setPrefSize(22, 22);
-        progress.setVisible(false);
+        hbox.getChildren().addAll(btn1, btn2, btn4);
 
-        hbox.getChildren().addAll(btn1, btn2, btn3, btn4, progress);
-
-        // Bottom bar: Back + status
+        // Bottom bar: Back + Finish + progress + status
         HBox bottomBox = new HBox();
         bottomBox.setPadding(new Insets(5, 10, 10, 10));
         bottomBox.setSpacing(15);
@@ -182,10 +177,18 @@ public class Project200 extends Application {
         Button btn5 = new Button("Back");
         btn5.setStyle("-fx-font: 14 arial;");
 
+        Button btn3 = new Button("Finish");
+        btn3.setStyle("-fx-font: 14 arial;");
+        btn3.setDisable(true);
+
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setPrefSize(22, 22);
+        progress.setVisible(false);
+
         Label statusLabel = new Label("No file selected");
         statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
 
-        bottomBox.getChildren().addAll(btn5, statusLabel);
+        bottomBox.getChildren().addAll(btn5, btn3, progress, statusLabel);
 
         border.setTop(hbox);
         border.setLeft(pageRangeGrid);
@@ -211,6 +214,7 @@ public class Project200 extends Application {
                     pdfpath = Paths.get(inputfile).getFileName();
                     statusLabel.setText("Selected: " + filename);
                     statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
+                    btn3.setDisable(false);
                     success = true;
                 }
             }
@@ -225,6 +229,7 @@ public class Project200 extends Application {
                     pdfpath = Paths.get(selected).getFileName();
                     statusLabel.setText("Selected: " + filename);
                     statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
+                    btn3.setDisable(false);
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
@@ -280,6 +285,7 @@ public class Project200 extends Application {
             beforeend = false;
             statusLabel.setText("No file selected");
             statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
+            btn3.setDisable(true);
             border.setLeft(gridbybutton());
         });
 

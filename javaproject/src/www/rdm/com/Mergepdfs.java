@@ -59,20 +59,15 @@ class Mergepdfs {
         hbox.setStyle("-fx-background-color: #1976D2;");
 
         Button btn1 = new Button("Select PDF");
-        Button btn2 = new Button("Finish");
         Button btn3 = new Button("Refresh");
 
-        ProgressIndicator progress = new ProgressIndicator();
-        progress.setPrefSize(22, 22);
-        progress.setVisible(false);
-
-        hbox.getChildren().addAll(btn1, btn2, btn3, progress);
+        hbox.getChildren().addAll(btn1, btn3);
         border.setTop(hbox);
         border.setLeft(fileListGrid);
 
         fileListRow = 1;
 
-        // Bottom bar: Back + status
+        // Bottom bar: Back + Finish + progress + status
         HBox bottomBox = new HBox();
         bottomBox.setPadding(new Insets(5, 10, 10, 10));
         bottomBox.setSpacing(15);
@@ -81,10 +76,18 @@ class Mergepdfs {
         Button back = new Button("Back");
         back.setStyle("-fx-font: 14 arial;");
 
+        Button btn2 = new Button("Finish");
+        btn2.setStyle("-fx-font: 14 arial;");
+        btn2.setDisable(true);
+
+        ProgressIndicator progress = new ProgressIndicator();
+        progress.setPrefSize(22, 22);
+        progress.setVisible(false);
+
         Label statusLabel = new Label("No files added");
         statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
 
-        bottomBox.getChildren().addAll(back, statusLabel);
+        bottomBox.getChildren().addAll(back, btn2, progress, statusLabel);
         border.setBottom(bottomBox);
 
         // Drag & drop: each dropped PDF is added to the merge list
@@ -116,6 +119,7 @@ class Mergepdfs {
                 int count = filelist.size();
                 statusLabel.setText(count + " file" + (count == 1 ? "" : "s") + " added");
                 statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
+                btn2.setDisable(false);
             }
             event.setDropCompleted(success);
             event.consume();
@@ -140,6 +144,7 @@ class Mergepdfs {
                         int count = filelist.size();
                         statusLabel.setText(count + " file" + (count == 1 ? "" : "s") + " added");
                         statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
+                        btn2.setDisable(false);
                     } finally {
                         pdfreader.close();
                     }
@@ -195,6 +200,7 @@ class Mergepdfs {
                 border.setLeft(gridbybutton(t1));
                 statusLabel.setText("No files added");
                 statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
+                btn2.setDisable(true);
             }
         });
 
