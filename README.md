@@ -2,6 +2,9 @@
 
 A Java/JavaFX desktop application for splitting, merging, and removing pages from PDF files. Built with iText 5 for PDF processing and JavaFX 21 for the UI.
 
+<img width="517" height="653" alt="image" src="https://github.com/user-attachments/assets/50653bb5-1a4b-43fa-a1c3-25b85a353812" />
+
+
 ---
 
 ## Features
