@@ -40,7 +40,7 @@ class Badpdf extends Application {
         messageLabel.setWrapText(true);
 
         Button closeButton = new Button("Close");
-        closeButton.setStyle("-fx-font: 13 arial; -fx-base: #ECEFF1;");
+        closeButton.getStyleClass().add("secondary-button");
         closeButton.setOnAction(e -> primaryStage.close());
 
         VBox layout = new VBox(12, icon, title, fileLabel, messageLabel, closeButton);
@@ -48,6 +48,7 @@ class Badpdf extends Application {
         layout.setPadding(new Insets(25));
 
         Scene scene = new Scene(layout, 420, 230);
+        scene.getStylesheets().add(Badpdf.class.getResource("/www/rdm/com/styles.css").toExternalForm());
         primaryStage.setTitle("Cannot Open PDF");
         primaryStage.setScene(scene);
         primaryStage.show();

@@ -104,6 +104,7 @@ class Chapter {
 
     GridPane gridbybutton() {
         Button btn = new Button("Start");
+        btn.getStyleClass().add("primary-button");
         startButton = btn;
         chapterNameField = new TextField();
         chapterNameField.setPrefWidth(100);
@@ -138,6 +139,8 @@ class Chapter {
 
         Button btn1 = new Button("Select PDF");
         Button btn2 = new Button("Refresh");
+        btn1.getStyleClass().add("toolbar-button");
+        btn2.getStyleClass().add("toolbar-button");
 
         progress = new ProgressIndicator();
         progress.setPrefSize(22, 22);
@@ -153,7 +156,7 @@ class Chapter {
         bottomBox.setAlignment(Pos.CENTER_LEFT);
 
         Button back = new Button("Back");
-        back.setStyle("-fx-font: 14 arial;");
+        back.getStyleClass().add("secondary-button");
 
         statusLabel = new Label("No file selected");
         statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
@@ -257,6 +260,8 @@ class Chapter {
             }
         });
 
-        return new Scene(border, 420, 500);
+        Scene scene = new Scene(border, 420, 500);
+        scene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
+        return scene;
     }
 }

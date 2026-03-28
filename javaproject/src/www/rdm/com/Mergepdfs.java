@@ -66,6 +66,8 @@ class Mergepdfs {
 
         Button btn1 = new Button("Select PDF");
         Button btn3 = new Button("Refresh");
+        btn1.getStyleClass().add("toolbar-button");
+        btn3.getStyleClass().add("toolbar-button");
 
         hbox.getChildren().addAll(btn1, btn3);
         border.setTop(hbox);
@@ -80,10 +82,10 @@ class Mergepdfs {
         bottomBox.setAlignment(Pos.CENTER_LEFT);
 
         Button back = new Button("Back");
-        back.setStyle("-fx-font: 14 arial;");
+        back.getStyleClass().add("secondary-button");
 
         Button btn2 = new Button("Finish");
-        btn2.setStyle("-fx-font: 14 arial;");
+        btn2.getStyleClass().add("primary-button");
         btn2.setDisable(true);
 
         ProgressIndicator progress = new ProgressIndicator();
@@ -219,6 +221,8 @@ class Mergepdfs {
             }
         });
 
-        return new Scene(border, 420, 500);
+        Scene scene = new Scene(border, 420, 500);
+        scene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
+        return scene;
     }
 }

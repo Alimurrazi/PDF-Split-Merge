@@ -30,6 +30,8 @@ class Openfile {
         grid.add(t, 3, 1);
         Button btn1 = new Button("Yes");
         Button btn2 = new Button("No");
+        btn1.getStyleClass().add("primary-button");
+        btn2.getStyleClass().add("secondary-button");
         grid.add(btn1, 3, 7);
         grid.add(btn2, 7, 7);
 
@@ -51,6 +53,7 @@ class Openfile {
         });
 
         Scene scene = new Scene(grid, 400, 175);
+        scene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
     }

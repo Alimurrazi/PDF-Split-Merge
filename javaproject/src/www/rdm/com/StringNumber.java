@@ -23,6 +23,8 @@ class StringNumber {
         hbox.setSpacing(10);
         Button btn1 = new Button("By Page Number");
         Button btn2 = new Button("By Chapter's Name");
+        btn1.getStyleClass().add("toolbar-button");
+        btn2.getStyleClass().add("toolbar-button");
         hbox.getChildren().addAll(btn1, btn2);
         hbox.setStyle("-fx-background-color: #1976D2;");
         border.setTop(hbox);
@@ -31,7 +33,7 @@ class StringNumber {
         hbox1.setPadding(new Insets(0, 10, 10, 10));
         hbox1.setSpacing(10);
         Button back = new Button("Back");
-        back.setStyle("-fx-font: 14 arial;");
+        back.getStyleClass().add("secondary-button");
         hbox1.getChildren().add(back);
         border.setBottom(hbox1);
 
@@ -81,6 +83,7 @@ class StringNumber {
         });
 
         Scene scenesn = new Scene(border, 420, 500);
+        scenesn.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
         sceneRef[0] = scenesn;
         return scenesn;
     }

@@ -1,0 +1,83 @@
+/* Toolbar buttons — sit on the blue #1976D2 toolbar */
+.toolbar-button {
+    -fx-background-color: rgba(255, 255, 255, 0.15);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 6 12 6 12;
+    -fx-border-color: rgba(255, 255, 255, 0.4);
+    -fx-border-radius: 4;
+}
+
+.toolbar-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.28);
+}
+
+.toolbar-button:pressed {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Primary action button — Finish, Start, Yes */
+.primary-button {
+    -fx-background-color: #1976D2;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 6 18 6 18;
+}
+
+.primary-button:hover {
+    -fx-background-color: #1565C0;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #0D47A1;
+}
+
+.primary-button:disabled {
+    -fx-background-color: #BBDEFB;
+    -fx-text-fill: white;
+    -fx-opacity: 1;
+}
+
+/* Secondary button — Back, Exit, No, Close */
+.secondary-button {
+    -fx-background-color: #EEEEEE;
+    -fx-text-fill: #333333;
+    -fx-font-size: 13px;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 6 18 6 18;
+    -fx-border-color: #CCCCCC;
+    -fx-border-radius: 4;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #E0E0E0;
+}
+
+.secondary-button:pressed {
+    -fx-background-color: #D5D5D5;
+}
+
+/* Small inline button — OK in page range form */
+.small-button {
+    -fx-background-color: #1976D2;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-padding: 4 10 4 10;
+}
+
+.small-button:hover {
+    -fx-background-color: #1565C0;
+}
+
+.small-button:pressed {
+    -fx-background-color: #0D47A1;
+}

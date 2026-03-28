@@ -23,6 +23,15 @@
     <build>
         <sourceDirectory>src</sourceDirectory>
 
+        <resources>
+            <resource>
+                <directory>src</directory>
+                <includes>
+                    <include>**/*.css</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
             <!-- JavaFX: run with: mvn javafx:run -->
             <plugin>

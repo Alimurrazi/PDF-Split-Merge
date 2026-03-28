@@ -96,7 +96,7 @@ public class Project200 extends Application {
         }
 
         Button okbutton = new Button("OK");
-        okbutton.setStyle("-fx-font: 12 arial;");
+        okbutton.getStyleClass().add("small-button");
         TextField fromField = new TextField();
         TextField toField = new TextField();
         fromField.setPrefWidth(100);
@@ -184,6 +184,9 @@ public class Project200 extends Application {
         Button btn1 = new Button("Select PDF");
         Button btn2 = new Button("Add Pages");
         Button btn4 = new Button("Refresh");
+        btn1.getStyleClass().add("toolbar-button");
+        btn2.getStyleClass().add("toolbar-button");
+        btn4.getStyleClass().add("toolbar-button");
 
         hbox.getChildren().addAll(btn1, btn2, btn4);
 
@@ -194,10 +197,10 @@ public class Project200 extends Application {
         bottomBox.setAlignment(Pos.CENTER_LEFT);
 
         Button btn5 = new Button("Back");
-        btn5.setStyle("-fx-font: 14 arial;");
+        btn5.getStyleClass().add("secondary-button");
 
         Button btn3 = new Button("Finish");
-        btn3.setStyle("-fx-font: 14 arial;");
+        btn3.getStyleClass().add("primary-button");
         btn3.setDisable(true);
 
         ProgressIndicator progress = new ProgressIndicator();
@@ -310,7 +313,9 @@ public class Project200 extends Application {
 
         btn5.setOnAction(event -> stage.setScene(parentScene));
 
-        return new Scene(border, 420, 500);
+        Scene scene = new Scene(border, 420, 500);
+        scene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
+        return scene;
     }
 
     public void start(Stage primaryStage) {
@@ -322,6 +327,9 @@ public class Project200 extends Application {
         Button btn1 = new Button("Split and Merge");
         Button btn2 = new Button("Merge PDFs");
         Button btn3 = new Button("Remove Pages");
+        btn1.getStyleClass().add("toolbar-button");
+        btn2.getStyleClass().add("toolbar-button");
+        btn3.getStyleClass().add("toolbar-button");
 
         hbox.getChildren().addAll(btn1, btn2, btn3);
         hbox.setStyle(TOOLBAR_STYLE);
@@ -330,7 +338,7 @@ public class Project200 extends Application {
         hbox1.setPadding(new Insets(0, 10, 10, 10));
         hbox1.setSpacing(10);
         Button exit = new Button("Exit");
-        exit.setStyle("-fx-font: 14 arial;");
+        exit.getStyleClass().add("secondary-button");
         hbox1.getChildren().add(exit);
 
         border.setTop(hbox);
@@ -362,6 +370,7 @@ public class Project200 extends Application {
         border.setCenter(centerBox);
 
         Scene homeScene = new Scene(border, 420, 500);
+        homeScene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
 
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
