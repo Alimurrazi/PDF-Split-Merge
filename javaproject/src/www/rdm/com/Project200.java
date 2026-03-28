@@ -25,6 +25,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -151,6 +152,24 @@ public class Project200 extends Application {
         return pageRangeGrid;
     }
 
+    private VBox featureCard(String title, String description) {
+        VBox card = new VBox(5);
+        card.setPadding(new Insets(10, 14, 10, 14));
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setStyle("-fx-background-color: #F5F5F5; -fx-border-color: #DDDDDD;"
+                + " -fx-border-radius: 4; -fx-background-radius: 4;");
+
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #333333;");
+
+        Label descLabel = new Label(description);
+        descLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #666666;");
+        descLabel.setWrapText(true);
+
+        card.getChildren().addAll(titleLabel, descLabel);
+        return card;
+    }
+
     Scene fbtn1(Stage stage, Scene parentScene) {
         BorderPane border = new BorderPane();
         pageRangeGrid = gridinfo();
@@ -191,7 +210,7 @@ public class Project200 extends Application {
         bottomBox.getChildren().addAll(btn5, btn3, progress, statusLabel);
 
         border.setTop(hbox);
-        border.setLeft(pageRangeGrid);
+        border.setCenter(pageRangeGrid);
         border.setBottom(bottomBox);
 
         // Drag & drop: drop a PDF to select it as input
@@ -237,7 +256,7 @@ public class Project200 extends Application {
             }
         });
 
-        btn2.setOnAction(event -> border.setLeft(gridbybutton()));
+        btn2.setOnAction(event -> border.setCenter(gridbybutton()));
 
         btn3.setOnAction(event -> {
             if (inputfile == null) {
@@ -286,7 +305,7 @@ public class Project200 extends Application {
             statusLabel.setText("No file selected");
             statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
             btn3.setDisable(true);
-            border.setLeft(gridbybutton());
+            border.setCenter(gridbybutton());
         });
 
         btn5.setOnAction(event -> stage.setScene(parentScene));
@@ -316,6 +335,31 @@ public class Project200 extends Application {
 
         border.setTop(hbox);
         border.setBottom(hbox1);
+
+        // Center: app description + feature cards
+        VBox centerBox = new VBox(12);
+        centerBox.setPadding(new Insets(20, 20, 10, 20));
+        centerBox.setAlignment(Pos.TOP_CENTER);
+
+        Label appTitle = new Label("PDF Split & Merge");
+        appTitle.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #1976D2;");
+
+        Label subtitle = new Label("Choose an operation from the toolbar above");
+        subtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #777777;");
+
+        VBox card1 = featureCard("Split & Merge",
+                "Extract specific page ranges from a PDF into a new file.\nSupports multiple ranges in one pass.");
+        VBox card2 = featureCard("Merge PDFs",
+                "Combine multiple PDF files into a single document in the order you choose.");
+        VBox card3 = featureCard("Remove Pages",
+                "Remove specific page ranges from a PDF and save the result.");
+
+        Label hint = new Label("Tip: Drag & drop PDF files directly onto any screen");
+        hint.setStyle("-fx-font-size: 11px; -fx-text-fill: #999999; -fx-font-style: italic;");
+        hint.setWrapText(true);
+
+        centerBox.getChildren().addAll(appTitle, subtitle, card1, card2, card3, hint);
+        border.setCenter(centerBox);
 
         Scene homeScene = new Scene(border, 420, 500);
 

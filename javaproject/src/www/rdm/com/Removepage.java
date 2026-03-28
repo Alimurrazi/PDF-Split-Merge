@@ -143,6 +143,7 @@ class Removepage {
         bottomBox.getChildren().addAll(btn5, btn3, progress, statusLabel);
 
         border.setTop(hbox);
+        border.setCenter(gridbybutton());
         border.setBottom(bottomBox);
 
         // Drag & drop: drop a PDF to select it as input
@@ -205,7 +206,7 @@ class Removepage {
         btn2.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                border.setLeft(gridbybutton());
+                border.setCenter(gridbybutton());
             }
         });
 
@@ -258,7 +259,7 @@ class Removepage {
                 statusLabel.setText("No file selected");
                 statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
                 btn3.setDisable(true);
-                border.setLeft(gridbybutton());
+                border.setCenter(gridbybutton());
             }
         });
 

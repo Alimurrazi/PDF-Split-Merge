@@ -22,6 +22,7 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 class Chapter {
@@ -37,6 +38,8 @@ class Chapter {
     ProgressIndicator progress;
     Button startButton;
     Label statusLabel;
+    VBox placeholderBox;
+    VBox centerWrapper;
 
     void splitbychapter() {
         if (progress != null) progress.setVisible(true);
@@ -85,7 +88,8 @@ class Chapter {
 
             filename = null;
             refreshPending = true;
-            border.setLeft(gridbybutton());
+            gridbybutton();
+            border.setCenter(placeholderBox);
         });
 
         task.setOnFailed(ev -> {
@@ -157,6 +161,26 @@ class Chapter {
         bottomBox.getChildren().addAll(back, statusLabel);
         border.setBottom(bottomBox);
 
+        // Center: placeholder until a file is selected
+        Label placeholderText = new Label("Select a PDF using the toolbar above\nor drag and drop a PDF file here.");
+        placeholderText.setStyle("-fx-font-size: 13px; -fx-text-fill: #BBBBBB; -fx-font-style: italic;");
+        placeholderText.setWrapText(true);
+        placeholderBox = new VBox(placeholderText);
+        placeholderBox.setPadding(new Insets(30, 25, 25, 25));
+
+        // Wrapper shown once a file is selected: input grid + usage tips
+        Label tipLabel = new Label(
+                "Tips:\n"
+                + "\u2022 Enter the heading exactly as it appears in the document\n"
+                + "\u2022 Matching is case-insensitive\n"
+                + "\u2022 Uses font-size analysis to detect chapter boundaries");
+        tipLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #888888;");
+        tipLabel.setWrapText(true);
+        centerWrapper = new VBox(12, contentGrid, tipLabel);
+        centerWrapper.setPadding(new Insets(0));
+
+        border.setCenter(placeholderBox);
+
         // Drag & drop: drop a PDF to select it as input
         border.setOnDragOver((DragEvent event) -> {
             if (event.getDragboard().hasFiles()) {
@@ -179,7 +203,8 @@ class Chapter {
                         project.pdfpath = Paths.get(filename).getFileName();
                         statusLabel.setText("Selected: " + dropped.getName());
                         statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
-                        border.setLeft(gridbybutton());
+                        gridbybutton();
+                        border.setCenter(centerWrapper);
                         success = true;
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "Dropped file is not a valid PDF", e);
@@ -203,7 +228,8 @@ class Chapter {
                     try {
                         statusLabel.setText("Selected: " + pathp.getFileName());
                         statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
-                        border.setLeft(gridbybutton());
+                        gridbybutton();
+                        border.setCenter(centerWrapper);
                     } finally {
                         pdfreader.close();
                     }
@@ -220,7 +246,8 @@ class Chapter {
                 refreshPending = true;
                 statusLabel.setText("No file selected");
                 statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
-                border.setLeft(gridbybutton());
+                gridbybutton();
+                border.setCenter(placeholderBox);
             }
         });
 
