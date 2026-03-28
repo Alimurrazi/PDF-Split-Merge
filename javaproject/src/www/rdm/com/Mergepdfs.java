@@ -36,6 +36,7 @@ class Mergepdfs {
     Project200 project = new Project200();
     boolean refreshPending = false;
     GridPane fileListGrid = new GridPane();
+    Label emptyStateLabel;
 
     GridPane gridbybutton(Text t) {
         t.setFont(new Font(20));
@@ -51,6 +52,11 @@ class Mergepdfs {
     Scene merge(Stage stage, Scene homeScene) {
         fileListGrid = project.gridinfo();
 
+        emptyStateLabel = new Label("No files added yet.\nClick 'Select PDF' or drag PDF files here.");
+        emptyStateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #BBBBBB; -fx-font-style: italic;");
+        emptyStateLabel.setWrapText(true);
+        fileListGrid.add(emptyStateLabel, 0, 0);
+
         // Toolbar
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
@@ -60,10 +66,12 @@ class Mergepdfs {
 
         Button btn1 = new Button("Select PDF");
         Button btn3 = new Button("Refresh");
+        btn1.getStyleClass().add("toolbar-button");
+        btn3.getStyleClass().add("toolbar-button");
 
         hbox.getChildren().addAll(btn1, btn3);
         border.setTop(hbox);
-        border.setLeft(fileListGrid);
+        border.setCenter(fileListGrid);
 
         fileListRow = 1;
 
@@ -74,10 +82,10 @@ class Mergepdfs {
         bottomBox.setAlignment(Pos.CENTER_LEFT);
 
         Button back = new Button("Back");
-        back.setStyle("-fx-font: 14 arial;");
+        back.getStyleClass().add("secondary-button");
 
         Button btn2 = new Button("Finish");
-        btn2.setStyle("-fx-font: 14 arial;");
+        btn2.getStyleClass().add("primary-button");
         btn2.setDisable(true);
 
         ProgressIndicator progress = new ProgressIndicator();
@@ -109,13 +117,14 @@ class Mergepdfs {
                             reader.close();
                             filelist.add(path);
                             Text t = new Text(filelist.size() + ".  " + droppedFile.getName());
-                            border.setLeft(gridbybutton(t));
+                            border.setCenter(gridbybutton(t));
                         } catch (Exception e) {
                             LOGGER.log(Level.WARNING, "Dropped file is not a valid PDF: " + path, e);
                         }
                         success = true;
                     }
                 }
+                fileListGrid.getChildren().remove(emptyStateLabel);
                 int count = filelist.size();
                 statusLabel.setText(count + " file" + (count == 1 ? "" : "s") + " added");
                 statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
@@ -140,7 +149,8 @@ class Mergepdfs {
                         Text t = new Text();
                         Path path = Paths.get(filename);
                         t.setText(filelist.size() + ".  " + path.getFileName());
-                        border.setLeft(gridbybutton(t));
+                        border.setCenter(gridbybutton(t));
+                        fileListGrid.getChildren().remove(emptyStateLabel);
                         int count = filelist.size();
                         statusLabel.setText(count + " file" + (count == 1 ? "" : "s") + " added");
                         statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
@@ -197,7 +207,8 @@ class Mergepdfs {
                 Text t1 = new Text();
                 t1.setText(null);
                 refreshPending = true;
-                border.setLeft(gridbybutton(t1));
+                border.setCenter(gridbybutton(t1));
+                fileListGrid.add(emptyStateLabel, 0, 0);
                 statusLabel.setText("No files added");
                 statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
                 btn2.setDisable(true);
@@ -210,6 +221,8 @@ class Mergepdfs {
             }
         });
 
-        return new Scene(border, 420, 500);
+        Scene scene = new Scene(border, 420, 500);
+        scene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
+        return scene;
     }
 }

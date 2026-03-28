@@ -47,7 +47,7 @@ class Removepage {
         }
 
         Button okbutton = new Button("OK");
-        okbutton.setStyle("-fx-font: 12 arial;");
+        okbutton.getStyleClass().add("small-button");
         TextField fromField = new TextField();
         TextField toField = new TextField();
         fromField.setPrefWidth(100);
@@ -117,6 +117,9 @@ class Removepage {
         Button btn1 = new Button("Select PDF");
         Button btn2 = new Button("Add Pages");
         Button btn4 = new Button("Refresh");
+        btn1.getStyleClass().add("toolbar-button");
+        btn2.getStyleClass().add("toolbar-button");
+        btn4.getStyleClass().add("toolbar-button");
 
         hbox.getChildren().addAll(btn1, btn2, btn4);
 
@@ -127,10 +130,10 @@ class Removepage {
         bottomBox.setAlignment(Pos.CENTER_LEFT);
 
         Button btn5 = new Button("Back");
-        btn5.setStyle("-fx-font: 14 arial;");
+        btn5.getStyleClass().add("secondary-button");
 
         Button btn3 = new Button("Finish");
-        btn3.setStyle("-fx-font: 14 arial;");
+        btn3.getStyleClass().add("primary-button");
         btn3.setDisable(true);
 
         ProgressIndicator progress = new ProgressIndicator();
@@ -143,6 +146,7 @@ class Removepage {
         bottomBox.getChildren().addAll(btn5, btn3, progress, statusLabel);
 
         border.setTop(hbox);
+        border.setCenter(gridbybutton());
         border.setBottom(bottomBox);
 
         // Drag & drop: drop a PDF to select it as input
@@ -205,7 +209,7 @@ class Removepage {
         btn2.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                border.setLeft(gridbybutton());
+                border.setCenter(gridbybutton());
             }
         });
 
@@ -258,7 +262,7 @@ class Removepage {
                 statusLabel.setText("No file selected");
                 statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
                 btn3.setDisable(true);
-                border.setLeft(gridbybutton());
+                border.setCenter(gridbybutton());
             }
         });
 
@@ -269,6 +273,8 @@ class Removepage {
             }
         });
 
-        return new Scene(border, 420, 500);
+        Scene scene = new Scene(border, 420, 500);
+        scene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
+        return scene;
     }
 }

@@ -98,20 +98,30 @@ All PDF operations run on a `javafx.concurrent.Task` thread. This keeps the UI t
 - Maven 3.9.x
 - (Optional) VS Code with Extension Pack for Java
 
-### Run the App
-
-```bash
-cd javaproject
-mvn javafx:run
-```
-
-### Build a Fat JAR
+### Step 1 — Build
 
 ```bash
 cd javaproject
 mvn package
 # Output: target/pdf-split-merge-1.0-SNAPSHOT.jar
 ```
+
+This compiles the source and bundles all dependencies (iText, JavaFX) into a single JAR.
+
+### Step 2 — Run
+
+```bash
+java -jar target/pdf-split-merge-1.0-SNAPSHOT.jar
+```
+
+### Run without building (development shortcut)
+
+```bash
+cd javaproject
+mvn javafx:run
+```
+
+Compiles and launches in one step — useful during development, no JAR produced.
 
 ---
 
