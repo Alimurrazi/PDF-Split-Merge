@@ -26,7 +26,7 @@ class PdfChapterSplitService {
 
         PdfReader reader = new PdfReader(inputPath);
         try {
-            SemTextExtractionStrategy strategy = new SemTextExtractionStrategy(state);
+            ChapterHeadingStrategy strategy = new ChapterHeadingStrategy(state);
             File tempFile = File.createTempFile("pdf_chapter", ".txt");
             try (PrintWriter out = new PrintWriter(new FileOutputStream(tempFile))) {
                 for (int i = 1; i <= reader.getNumberOfPages(); i++) {

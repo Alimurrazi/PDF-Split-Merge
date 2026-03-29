@@ -18,13 +18,17 @@ javaproject/
 | Class | Purpose |
 |---|---|
 | `Project200` | Main JavaFX application, entry point |
+| `SplitOptions` | Split method chooser (by page range or by chapter) |
+| `SplitMerge` | Split by page range scene |
+| `Chapter` | Split by chapter name scene |
 | `Mergepdfs` | Merge multiple PDFs into one |
 | `Removepage` | Remove specific pages from a PDF |
-| `Chapter` / `StringNumber` | Split PDF by page ranges |
+| `UiHelper` | Shared UI utilities (file picker, save dialog, grid) |
 | `Openfile` | Open resulting PDF after processing |
 | `Badpdf` | Error dialog for corrupted/invalid PDFs |
-| `SemTextExtractionStrategy` | Text extraction from PDF |
-| `Yourchoice` | User choice dialog |
+| `ChapterNotFoundDialog` | Shown when chapter heading is not found in PDF |
+| `ChapterHeadingStrategy` | Custom iText text extractor for font-size-aware chapter detection |
+| `TextExtractionState` | State holder for chapter text extraction |
 
 ## Tech Stack
 

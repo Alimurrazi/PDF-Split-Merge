@@ -69,7 +69,7 @@ class Chapter {
             int[] pages = task.getValue();
             if (pages == null) {
                 Stage prstage = new Stage();
-                Yourchoice yourchoice = new Yourchoice(currentChapterName);
+                ChapterNotFoundDialog yourchoice = new ChapterNotFoundDialog(currentChapterName);
                 try {
                     yourchoice.start(prstage);
                 } catch (Exception ex) {

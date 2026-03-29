@@ -8,10 +8,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-class Yourchoice extends Application {
+class ChapterNotFoundDialog extends Application {
     private final String realchaptername;
 
-    Yourchoice(String realchaptername) {
+    ChapterNotFoundDialog(String realchaptername) {
         this.realchaptername = realchaptername;
     }
 

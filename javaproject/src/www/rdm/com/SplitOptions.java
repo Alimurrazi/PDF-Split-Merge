@@ -12,7 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-class StringNumber {
+class SplitOptions {
 
     Project200 a = new Project200();
     BorderPane border = new BorderPane();
@@ -62,8 +62,8 @@ class StringNumber {
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                Project200 p = new Project200();
-                Scene scene1 = p.fbtn1(stage, sceneRef[0]);
+                SplitMerge splitMerge = new SplitMerge();
+                Scene scene1 = splitMerge.show(stage, sceneRef[0]);
                 stage.setScene(scene1);
             }
         });
