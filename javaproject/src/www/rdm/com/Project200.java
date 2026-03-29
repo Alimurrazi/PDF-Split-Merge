@@ -1,305 +1,39 @@
 package www.rdm.com;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.TextField;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class Project200 extends Application {
-    private static final Logger LOGGER = Logger.getLogger(Project200.class.getName());
     private static final String TOOLBAR_STYLE = "-fx-background-color: #1976D2;";
 
     BorderPane border = new BorderPane();
-    GridPane grid, pageRangeGrid;
-    int nextGridRow = 3;
-    String inputfile = null;
-    boolean refreshPending = false, headerAdded = false;
-    List<int[]> pageRanges = new ArrayList<>();
-    boolean beforeend = false;
-    String filename = null;
+    private Button splitBtn, mergeBtn, removeBtn;
 
-
-    GridPane gridbybutton() {
-        if (!headerAdded) {
-            Label text = new Label("Contributing Pages");
-            text.setFont(new Font("Arial", 25));
-            pageRangeGrid.add(text, 0, 1);
-            headerAdded = true;
-        }
-
-        Button okbutton = new Button("OK");
-        okbutton.getStyleClass().add("small-button");
-        TextField fromField = new TextField();
-        TextField toField = new TextField();
-        fromField.setPrefWidth(100);
-        toField.setPrefWidth(100);
-        fromField.setPromptText("From");
-        toField.setPromptText("To");
-
-        Label errorLabel = new Label();
-        errorLabel.setStyle("-fx-text-fill: red;");
-
-        HBox hbox1 = new HBox();
-        hbox1.setSpacing(10);
-        hbox1.getChildren().addAll(fromField, toField, okbutton, errorLabel);
-        pageRangeGrid.add(hbox1, 0, nextGridRow);
-
-        okbutton.setOnAction(new EventHandler<ActionEvent>() {
-            int from, to;
-            @Override
-            public void handle(ActionEvent e) {
-                errorLabel.setText("");
-                if (fromField.getText() == null || fromField.getText().isEmpty() || toField.getText() == null || toField.getText().isEmpty()) {
-                    errorLabel.setText("Both fields are required");
-                    return;
-                }
-                try {
-                    from = Integer.parseInt(fromField.getText().trim());
-                    to = Integer.parseInt(toField.getText().trim());
-                } catch (NumberFormatException ex) {
-                    errorLabel.setText("Pages must be numbers");
-                    return;
-                }
-                if (from < 1 || to < 1) {
-                    errorLabel.setText("Page numbers must be positive");
-                    return;
-                }
-                if (from > to) {
-                    errorLabel.setText("'From' must be <= 'To'");
-                    return;
-                }
-                pageRanges.add(new int[]{from, to});
-                beforeend = true;
-            }
-        });
-        nextGridRow = nextGridRow + 1;
-
-        if (refreshPending) {
-            pageRangeGrid.getChildren().clear();
-            pageRanges.clear();
-            refreshPending = false;
-            headerAdded = false;
-            nextGridRow = 2;
-        }
-        return pageRangeGrid;
-    }
-
-    private VBox featureCard(String title, String description) {
-        VBox card = new VBox(5);
-        card.setPadding(new Insets(10, 14, 10, 14));
-        card.setMaxWidth(Double.MAX_VALUE);
-        card.setStyle("-fx-background-color: #F5F5F5; -fx-border-color: #DDDDDD;"
-                + " -fx-border-radius: 4; -fx-background-radius: 4;");
-
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #333333;");
-
-        Label descLabel = new Label(description);
-        descLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #666666;");
-        descLabel.setWrapText(true);
-
-        card.getChildren().addAll(titleLabel, descLabel);
-        return card;
-    }
-
-    Scene fbtn1(Stage stage, Scene parentScene) {
-        BorderPane border = new BorderPane();
-        pageRangeGrid = UiHelper.gridinfo();
-
-        // Toolbar
+    private HBox buildToolbar() {
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(10);
-        hbox.setAlignment(Pos.CENTER_LEFT);
+        splitBtn = new Button("Split and Merge");
+        mergeBtn = new Button("Merge PDFs");
+        removeBtn = new Button("Remove Pages");
+        splitBtn.getStyleClass().add("toolbar-button");
+        mergeBtn.getStyleClass().add("toolbar-button");
+        removeBtn.getStyleClass().add("toolbar-button");
+        hbox.getChildren().addAll(splitBtn, mergeBtn, removeBtn);
         hbox.setStyle(TOOLBAR_STYLE);
-
-        Button btn1 = new Button("Select PDF");
-        Button btn2 = new Button("Add Pages");
-        Button btn4 = new Button("Refresh");
-        btn1.getStyleClass().add("toolbar-button");
-        btn2.getStyleClass().add("toolbar-button");
-        btn4.getStyleClass().add("toolbar-button");
-
-        hbox.getChildren().addAll(btn1, btn2, btn4);
-
-        // Bottom bar: Back + Finish + progress + status
-        HBox bottomBox = new HBox();
-        bottomBox.setPadding(new Insets(5, 10, 10, 10));
-        bottomBox.setSpacing(15);
-        bottomBox.setAlignment(Pos.CENTER_LEFT);
-
-        Button btn5 = new Button("Back");
-        btn5.getStyleClass().add("secondary-button");
-
-        Button btn3 = new Button("Finish");
-        btn3.getStyleClass().add("primary-button");
-        btn3.setDisable(true);
-
-        ProgressIndicator progress = new ProgressIndicator();
-        progress.setPrefSize(22, 22);
-        progress.setVisible(false);
-
-        Label statusLabel = new Label("No file selected");
-        statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
-
-        bottomBox.getChildren().addAll(btn5, btn3, progress, statusLabel);
-
-        border.setTop(hbox);
-        border.setCenter(pageRangeGrid);
-        border.setBottom(bottomBox);
-
-        // Drag & drop: drop a PDF to select it as input
-        border.setOnDragOver((DragEvent event) -> {
-            if (event.getDragboard().hasFiles()) {
-                event.acceptTransferModes(TransferMode.COPY);
-            }
-            event.consume();
-        });
-        border.setOnDragDropped((DragEvent event) -> {
-            Dragboard db = event.getDragboard();
-            boolean success = false;
-            if (db.hasFiles()) {
-                File dropped = db.getFiles().stream()
-                        .filter(f -> f.getName().toLowerCase().endsWith(".pdf"))
-                        .findFirst().orElse(null);
-                if (dropped != null) {
-                    inputfile = dropped.getAbsolutePath();
-                    filename = dropped.getName();
-                    statusLabel.setText("Selected: " + filename);
-                    statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
-                    btn3.setDisable(false);
-                    success = true;
-                }
-            }
-            event.setDropCompleted(success);
-            event.consume();
-        });
-
-        btn1.setOnAction(event -> {
-            try {
-                String selected = UiHelper.filepath();
-                if (selected != null) {
-                    inputfile = selected;
-                    filename = Paths.get(selected).getFileName().toString();
-                    statusLabel.setText("Selected: " + filename);
-                    statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
-                    btn3.setDisable(false);
-                }
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
-                UiHelper.badpdfcall(inputfile != null ? Paths.get(inputfile).getFileName() : null);
-            }
-        });
-
-        btn2.setOnAction(event -> border.setCenter(gridbybutton()));
-
-        btn3.setOnAction(event -> {
-            if (inputfile == null) {
-                statusLabel.setText("Please select a PDF first");
-                statusLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-weight: bold;");
-                return;
-            }
-            if (!beforeend) {
-                statusLabel.setText("Please add at least one page range");
-                statusLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-weight: bold;");
-                return;
-            }
-            Path path = Paths.get(filename);
-            File file = UiHelper.savefile();
-            if (file == null) return;
-
-            btn3.setDisable(true);
-            progress.setVisible(true);
-            String currentInput = inputfile;
-            Task<Void> task = new Task<>() {
-                @Override
-                protected Void call() throws Exception {
-                    new PdfSplitService().split(currentInput, pageRanges, file);
-                    return null;
-                }
-            };
-            task.setOnSucceeded(ev -> {
-                progress.setVisible(false);
-                btn3.setDisable(false);
-                new Openfile().openm(file);
-            });
-            task.setOnFailed(ev -> {
-                progress.setVisible(false);
-                btn3.setDisable(false);
-                LOGGER.log(Level.SEVERE, "Failed to split/merge PDF", task.getException());
-                UiHelper.badpdfcall(inputfile != null ? Paths.get(inputfile).getFileName() : null);
-            });
-            new Thread(task).start();
-        });
-
-        btn4.setOnAction(event -> {
-            refreshPending = true;
-            inputfile = null;
-            beforeend = false;
-            statusLabel.setText("No file selected");
-            statusLabel.setStyle("-fx-text-fill: #777777; -fx-font-style: italic;");
-            btn3.setDisable(true);
-            border.setCenter(gridbybutton());
-        });
-
-        btn5.setOnAction(event -> stage.setScene(parentScene));
-
-        Scene scene = new Scene(border, 420, 500);
-        scene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
-        return scene;
+        return hbox;
     }
 
-    public void start(Stage primaryStage) {
-        grid = UiHelper.gridinfo();
-
-        HBox hbox = new HBox();
-        hbox.setPadding(new Insets(15, 12, 15, 12));
-        hbox.setSpacing(10);
-        Button btn1 = new Button("Split and Merge");
-        Button btn2 = new Button("Merge PDFs");
-        Button btn3 = new Button("Remove Pages");
-        btn1.getStyleClass().add("toolbar-button");
-        btn2.getStyleClass().add("toolbar-button");
-        btn3.getStyleClass().add("toolbar-button");
-
-        hbox.getChildren().addAll(btn1, btn2, btn3);
-        hbox.setStyle(TOOLBAR_STYLE);
-
-        HBox hbox1 = new HBox();
-        hbox1.setPadding(new Insets(0, 10, 10, 10));
-        hbox1.setSpacing(10);
-        Button exit = new Button("Exit");
-        exit.getStyleClass().add("secondary-button");
-        hbox1.getChildren().add(exit);
-
-        border.setTop(hbox);
-        border.setBottom(hbox1);
-
-        // Center: app description + feature cards
+    private VBox buildCenterContent() {
         VBox centerBox = new VBox(12);
         centerBox.setPadding(new Insets(20, 20, 10, 20));
         centerBox.setAlignment(Pos.TOP_CENTER);
@@ -322,42 +56,57 @@ public class Project200 extends Application {
         hint.setWrapText(true);
 
         centerBox.getChildren().addAll(appTitle, subtitle, card1, card2, card3, hint);
-        border.setCenter(centerBox);
+        return centerBox;
+    }
+
+    private VBox featureCard(String title, String description) {
+        VBox card = new VBox(5);
+        card.setPadding(new Insets(10, 14, 10, 14));
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setStyle("-fx-background-color: #F5F5F5; -fx-border-color: #DDDDDD;"
+                + " -fx-border-radius: 4; -fx-background-radius: 4;");
+
+        Label titleLabel = new Label(title);
+        titleLabel.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #333333;");
+
+        Label descLabel = new Label(description);
+        descLabel.setStyle("-fx-font-size: 11px; -fx-text-fill: #666666;");
+        descLabel.setWrapText(true);
+
+        card.getChildren().addAll(titleLabel, descLabel);
+        return card;
+    }
+
+    public void start(Stage primaryStage) {
+        HBox toolbar = buildToolbar();
+
+        HBox bottomBox = new HBox();
+        bottomBox.setPadding(new Insets(0, 10, 10, 10));
+        bottomBox.setSpacing(10);
+        Button exit = new Button("Exit");
+        exit.getStyleClass().add("secondary-button");
+        bottomBox.getChildren().add(exit);
+
+        border.setTop(toolbar);
+        border.setCenter(buildCenterContent());
+        border.setBottom(bottomBox);
 
         Scene homeScene = new Scene(border, 420, 500);
         homeScene.getStylesheets().add(Project200.class.getResource("/www/rdm/com/styles.css").toExternalForm());
 
-        btn1.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                StringNumber stringnumber = new StringNumber();
-                Scene scenesn = stringnumber.selectbox(primaryStage, homeScene);
-                primaryStage.setScene(scenesn);
-            }
+        splitBtn.setOnAction(e -> {
+            Scene scenesn = new SplitOptions().selectbox(primaryStage, homeScene);
+            primaryStage.setScene(scenesn);
         });
-
-        btn2.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                Mergepdfs mergepdfs = new Mergepdfs();
-                Scene scene2 = mergepdfs.merge(primaryStage, homeScene);
-                primaryStage.setScene(scene2);
-            }
+        mergeBtn.setOnAction(e -> {
+            Scene scene2 = new Mergepdfs().merge(primaryStage, homeScene);
+            primaryStage.setScene(scene2);
         });
-
-        btn3.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                Removepage removepage = new Removepage();
-                Scene scene3 = removepage.remove(primaryStage, homeScene);
-                primaryStage.setScene(scene3);
-            }
+        removeBtn.setOnAction(e -> {
+            Scene scene3 = new Removepage().remove(primaryStage, homeScene);
+            primaryStage.setScene(scene3);
         });
-
-        exit.setOnAction(new EventHandler<ActionEvent>() {
-            public void handle(ActionEvent e) {
-                Platform.exit();
-            }
-        });
+        exit.setOnAction(e -> Platform.exit());
 
         primaryStage.setTitle("PDF Split & Merge");
         primaryStage.setScene(homeScene);

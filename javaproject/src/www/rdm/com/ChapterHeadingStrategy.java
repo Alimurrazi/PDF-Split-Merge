@@ -8,13 +8,13 @@ import com.itextpdf.text.pdf.parser.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class SemTextExtractionStrategy implements TextExtractionStrategy {
-    private static final Logger LOGGER = Logger.getLogger(SemTextExtractionStrategy.class.getName());
+class ChapterHeadingStrategy implements TextExtractionStrategy {
+    private static final Logger LOGGER = Logger.getLogger(ChapterHeadingStrategy.class.getName());
 
     private final TextExtractionState state;
     private String text;
 
-    SemTextExtractionStrategy(TextExtractionState state) {
+    ChapterHeadingStrategy(TextExtractionState state) {
         this.state = state;
     }
 

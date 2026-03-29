@@ -48,19 +48,21 @@ A Java/JavaFX desktop application for splitting, merging, and removing pages fro
 PDF-Split-Merge/
 ├── javaproject/
 │   ├── src/www/rdm/com/         # Java source files
-│   │   ├── Project200.java      # Main app + home screen
-│   │   ├── Mergepdfs.java       # Merge scene
-│   │   ├── Removepage.java      # Remove pages scene
-│   │   ├── StringNumber.java    # Split method chooser
-│   │   ├── Chapter.java         # Split by chapter name scene
-│   │   ├── Openfile.java        # "Open result?" dialog
-│   │   ├── Yourchoice.java      # Chapter not found dialog
-│   │   ├── Badpdf.java          # Corrupt/invalid PDF dialog
+│   │   ├── Project200.java               # Main app + home screen
+│   │   ├── SplitOptions.java             # Split method chooser (by page / by chapter)
+│   │   ├── SplitMerge.java               # Split by page range scene
+│   │   ├── Chapter.java                  # Split by chapter name scene
+│   │   ├── Mergepdfs.java                # Merge scene
+│   │   ├── Removepage.java               # Remove pages scene
+│   │   ├── UiHelper.java                 # Shared UI utilities (file picker, save dialog, grid)
+│   │   ├── Openfile.java                 # "Open result?" dialog
+│   │   ├── ChapterNotFoundDialog.java    # Shown when chapter heading is not found
+│   │   ├── Badpdf.java                   # Corrupt/invalid PDF dialog
 │   │   ├── PdfSplitService.java          # Split logic
 │   │   ├── PdfMergeService.java          # Merge logic
 │   │   ├── PdfPageRemoveService.java     # Remove pages logic
 │   │   ├── PdfChapterSplitService.java   # Chapter detection + split logic
-│   │   ├── SemTextExtractionStrategy.java # Custom iText text extractor
+│   │   ├── ChapterHeadingStrategy.java   # Custom iText text extractor (font-size aware)
 │   │   └── TextExtractionState.java      # State holder for text extraction
 │   └── pom.xml                  # Maven configuration
 └── CLAUDE.md                    # Developer notes
@@ -81,15 +83,15 @@ UI Scene  →  Service Class           →  iText 5
 ---------     ----------------------    --------
 Mergepdfs  →  PdfMergeService        →  PdfReader / PdfCopy
 Removepage →  PdfPageRemoveService   →  PdfReader / PdfCopy
-Project200 →  PdfSplitService        →  PdfReader / PdfCopy
-Chapter    →  PdfChapterSplitService →  PdfReader + SemTextExtractionStrategy
+SplitMerge →  PdfSplitService        →  PdfReader / PdfCopy
+Chapter    →  PdfChapterSplitService →  PdfReader + ChapterHeadingStrategy
 ```
 
 ### Background Threading
 All PDF operations run on a `javafx.concurrent.Task` thread. This keeps the UI thread free so the progress spinner remains active during long operations.
 
 ### Strategy Pattern (Chapter Detection)
-`SemTextExtractionStrategy` implements iText's `TextExtractionStrategy` interface. It tracks font sizes alongside extracted text to identify chapter headings — the largest font on a page is treated as a heading. This feeds `PdfChapterSplitService` which finds the start and end pages for a given chapter name.
+`ChapterHeadingStrategy` implements iText's `TextExtractionStrategy` interface. It tracks font sizes alongside extracted text to identify chapter headings — the largest font on a page is treated as a heading. This feeds `PdfChapterSplitService` which finds the start and end pages for a given chapter name.
 
 ---
 
@@ -167,7 +169,7 @@ Compiles and launches in one step — useful during development, no JAR produced
 | Scenario | Behavior |
 |---|---|
 | Corrupted or password-protected PDF | `Badpdf` dialog shown with a warning message |
-| Chapter heading not found | `Yourchoice` dialog shown; user can retry |
+| Chapter heading not found | `ChapterNotFoundDialog` shown; user can retry |
 | Invalid page range (from > to, or 0) | Inline validation error shown below the input |
 | Malformed individual pages | Skipped with a warning log; rest of file processed |
 
