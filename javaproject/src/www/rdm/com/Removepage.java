@@ -30,7 +30,6 @@ import javafx.stage.Stage;
 class Removepage {
     private static final Logger LOGGER = Logger.getLogger(Removepage.class.getName());
 
-    private final Project200 project = new Project200();
     private GridPane grid = new GridPane();
     private final List<int[]> pageRanges = new ArrayList<>();
     private boolean beforeend = false;
@@ -105,7 +104,7 @@ class Removepage {
 
     Scene remove(Stage stage, Scene homeScene) {
         BorderPane border = new BorderPane();
-        grid = project.gridinfo();
+        grid = UiHelper.gridinfo();
 
         // Toolbar
         HBox hbox = new HBox();
@@ -168,14 +167,13 @@ class Removepage {
                         PdfReader reader = new PdfReader(dropped.getAbsolutePath());
                         reader.close();
                         inputfile = dropped.getAbsolutePath();
-                        project.pdfpath = Paths.get(inputfile).getFileName();
                         statusLabel.setText("Selected: " + dropped.getName());
                         statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
                         btn3.setDisable(false);
                         success = true;
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "Dropped file is not a valid PDF", e);
-                        project.badpdfcall();
+                        UiHelper.badpdfcall(Paths.get(dropped.getAbsolutePath()).getFileName());
                     }
                 }
             }
@@ -187,10 +185,9 @@ class Removepage {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                    inputfile = project.filepath();
+                    inputfile = UiHelper.filepath();
                     if (inputfile == null) return;
                     Path path = Paths.get(inputfile);
-                    project.pdfpath = path.getFileName();
                     PdfReader pdfreader = new PdfReader(inputfile);
                     try {
                         statusLabel.setText("Selected: " + path.getFileName());
@@ -201,7 +198,7 @@ class Removepage {
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
-                    project.badpdfcall();
+                    UiHelper.badpdfcall(inputfile != null ? Paths.get(inputfile).getFileName() : null);
                 }
             }
         });
@@ -226,7 +223,7 @@ class Removepage {
                     statusLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-weight: bold;");
                     return;
                 }
-                File file = project.savefile();
+                File file = UiHelper.savefile();
                 if (file == null) return;
 
                 btn3.setDisable(true);
@@ -248,7 +245,7 @@ class Removepage {
                     progress.setVisible(false);
                     btn3.setDisable(false);
                     LOGGER.log(Level.SEVERE, "Failed to remove pages from PDF", task.getException());
-                    project.badpdfcall();
+                    UiHelper.badpdfcall(inputfile != null ? Paths.get(inputfile).getFileName() : null);
                 });
                 new Thread(task).start();
             }

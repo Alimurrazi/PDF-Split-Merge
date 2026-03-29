@@ -33,7 +33,6 @@ class Mergepdfs {
     BorderPane border = new BorderPane();
     List<String> filelist = new ArrayList<>();
     int fileListRow;
-    Project200 project = new Project200();
     boolean refreshPending = false;
     GridPane fileListGrid = new GridPane();
     Label emptyStateLabel;
@@ -50,7 +49,7 @@ class Mergepdfs {
     }
 
     Scene merge(Stage stage, Scene homeScene) {
-        fileListGrid = project.gridinfo();
+        fileListGrid = UiHelper.gridinfo();
 
         emptyStateLabel = new Label("No files added yet.\nClick 'Select PDF' or drag PDF files here.");
         emptyStateLabel.setStyle("-fx-font-size: 13px; -fx-text-fill: #BBBBBB; -fx-font-style: italic;");
@@ -137,18 +136,15 @@ class Mergepdfs {
         btn1.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                Project200 p = new Project200();
                 try {
-                    String filename = p.filepath();
-                    if (filename == null) return;
-                    Path pathp = Paths.get(filename);
-                    project.pdfpath = pathp.getFileName();
-                    PdfReader pdfreader = new PdfReader(filename);
+                    String filepath = UiHelper.filepath();
+                    if (filepath == null) return;
+                    Path pathp = Paths.get(filepath);
+                    PdfReader pdfreader = new PdfReader(filepath);
                     try {
-                        filelist.add(filename);
+                        filelist.add(filepath);
                         Text t = new Text();
-                        Path path = Paths.get(filename);
-                        t.setText(filelist.size() + ".  " + path.getFileName());
+                        t.setText(filelist.size() + ".  " + pathp.getFileName());
                         border.setCenter(gridbybutton(t));
                         fileListGrid.getChildren().remove(emptyStateLabel);
                         int count = filelist.size();
@@ -160,7 +156,7 @@ class Mergepdfs {
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
-                    project.badpdfcall();
+                    UiHelper.badpdfcall(null);
                 }
             }
         });
@@ -173,7 +169,7 @@ class Mergepdfs {
                     statusLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-weight: bold;");
                     return;
                 }
-                File file = project.savefile();
+                File file = UiHelper.savefile();
                 if (file == null) return;
 
                 btn2.setDisable(true);
@@ -194,7 +190,7 @@ class Mergepdfs {
                     progress.setVisible(false);
                     btn2.setDisable(false);
                     LOGGER.log(Level.SEVERE, "Failed to merge PDFs", task.getException());
-                    project.badpdfcall();
+                    UiHelper.badpdfcall(null);
                 });
                 new Thread(task).start();
             }

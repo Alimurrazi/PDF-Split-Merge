@@ -29,7 +29,6 @@ class Chapter {
     private static final Logger LOGGER = Logger.getLogger(Chapter.class.getName());
 
     BorderPane border = new BorderPane();
-    Project200 project = new Project200();
     GridPane contentGrid = new GridPane();
     boolean refreshPending = false;
     TextField chapterNameField;
@@ -46,7 +45,7 @@ class Chapter {
         if (startButton != null) startButton.setDisable(true);
 
         // Ask for save location on FX thread before going to background
-        File saveFile = project.savefile();
+        File saveFile = UiHelper.savefile();
         if (saveFile == null) {
             if (progress != null) progress.setVisible(false);
             if (startButton != null) startButton.setDisable(false);
@@ -82,7 +81,7 @@ class Chapter {
                     new Openfile().openm(saveFile);
                 } catch (Exception ex) {
                     LOGGER.log(Level.SEVERE, "Failed to extract chapter pages", ex);
-                    project.badpdfcall();
+                    UiHelper.badpdfcall(currentFilename != null ? Paths.get(currentFilename).getFileName() : null);
                 }
             }
 
@@ -96,7 +95,7 @@ class Chapter {
             if (progress != null) progress.setVisible(false);
             if (startButton != null) startButton.setDisable(false);
             LOGGER.log(Level.SEVERE, "Failed to split PDF by chapter", task.getException());
-            project.badpdfcall();
+            UiHelper.badpdfcall(filename != null ? Paths.get(filename).getFileName() : null);
         });
 
         new Thread(task).start();
@@ -128,7 +127,7 @@ class Chapter {
     }
 
     Scene chapterstring(Stage stage, Scene parentScene) throws NoClassDefFoundError {
-        contentGrid = project.gridinfo();
+        contentGrid = UiHelper.gridinfo();
 
         // Toolbar
         HBox hbox = new HBox();
@@ -203,7 +202,6 @@ class Chapter {
                         PdfReader reader = new PdfReader(dropped.getAbsolutePath());
                         reader.close();
                         filename = dropped.getAbsolutePath();
-                        project.pdfpath = Paths.get(filename).getFileName();
                         statusLabel.setText("Selected: " + dropped.getName());
                         statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
                         gridbybutton();
@@ -211,7 +209,7 @@ class Chapter {
                         success = true;
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "Dropped file is not a valid PDF", e);
-                        project.badpdfcall();
+                        UiHelper.badpdfcall(Paths.get(dropped.getAbsolutePath()).getFileName());
                     }
                 }
             }
@@ -223,10 +221,9 @@ class Chapter {
             public void handle(ActionEvent event) {
                 filename = null;
                 try {
-                    filename = project.filepath();
+                    filename = UiHelper.filepath();
                     if (filename == null) return;
                     Path pathp = Paths.get(filename);
-                    project.pdfpath = pathp.getFileName();
                     PdfReader pdfreader = new PdfReader(filename);
                     try {
                         statusLabel.setText("Selected: " + pathp.getFileName());
@@ -238,7 +235,7 @@ class Chapter {
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
-                    project.badpdfcall();
+                    UiHelper.badpdfcall(filename != null ? Paths.get(filename).getFileName() : null);
                 }
             }
         });

@@ -17,8 +17,7 @@ class Yourchoice extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Project200 a = new Project200();
-        GridPane grid = a.gridinfo();
+        GridPane grid = UiHelper.gridinfo();
 
         Text t = new Text();
         t.setText("Sorry!\nWe have find no section in this Pdf\nNamed " + realchaptername);
