@@ -27,14 +27,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class Project200 extends Application {
     private static final Logger LOGGER = Logger.getLogger(Project200.class.getName());
     private static final String TOOLBAR_STYLE = "-fx-background-color: #1976D2;";
 
-    public Path pdfpath = null;
     BorderPane border = new BorderPane();
     GridPane grid, pageRangeGrid;
     int nextGridRow = 3;
@@ -44,48 +42,6 @@ public class Project200 extends Application {
     boolean beforeend = false;
     String filename = null;
 
-    GridPane gridinfo() {
-        GridPane gri = new GridPane();
-        gri.setAlignment(Pos.TOP_LEFT);
-        gri.setHgap(10);
-        gri.setVgap(10);
-        gri.setPadding(new Insets(25, 25, 25, 25));
-        return gri;
-    }
-
-    String filepath() {
-        Stage mystage = null;
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PDF files", "*.pdf");
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.getExtensionFilters().add(extFilter);
-        File file = fileChooser.showOpenDialog(mystage);
-        inputfile = null;
-        if (file == null) return null;
-        inputfile = file.getAbsolutePath();
-        filename = file.getName();
-        return inputfile;
-    }
-
-    File savefile() {
-        Stage mystage = null;
-        FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PDF", ".pdf");
-        fileChooser.getExtensionFilters().add(extFilter);
-        File file = fileChooser.showSaveDialog(mystage);
-        return file;
-    }
-
-    void badpdfcall() {
-        if (pdfpath != null) {
-            Stage prstage = new Stage();
-            Badpdf badpdf = new Badpdf(pdfpath);
-            try {
-                badpdf.start(prstage);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Failed to show bad PDF dialog", e);
-            }
-        }
-    }
 
     GridPane gridbybutton() {
         if (!headerAdded) {
@@ -172,7 +128,7 @@ public class Project200 extends Application {
 
     Scene fbtn1(Stage stage, Scene parentScene) {
         BorderPane border = new BorderPane();
-        pageRangeGrid = gridinfo();
+        pageRangeGrid = UiHelper.gridinfo();
 
         // Toolbar
         HBox hbox = new HBox();
@@ -233,7 +189,6 @@ public class Project200 extends Application {
                 if (dropped != null) {
                     inputfile = dropped.getAbsolutePath();
                     filename = dropped.getName();
-                    pdfpath = Paths.get(inputfile).getFileName();
                     statusLabel.setText("Selected: " + filename);
                     statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
                     btn3.setDisable(false);
@@ -246,16 +201,17 @@ public class Project200 extends Application {
 
         btn1.setOnAction(event -> {
             try {
-                String selected = filepath();
+                String selected = UiHelper.filepath();
                 if (selected != null) {
-                    pdfpath = Paths.get(selected).getFileName();
+                    inputfile = selected;
+                    filename = Paths.get(selected).getFileName().toString();
                     statusLabel.setText("Selected: " + filename);
                     statusLabel.setStyle("-fx-text-fill: #1976D2; -fx-font-weight: bold;");
                     btn3.setDisable(false);
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Failed to open PDF file", e);
-                badpdfcall();
+                UiHelper.badpdfcall(inputfile != null ? Paths.get(inputfile).getFileName() : null);
             }
         });
 
@@ -273,8 +229,7 @@ public class Project200 extends Application {
                 return;
             }
             Path path = Paths.get(filename);
-            pdfpath = path.getFileName();
-            File file = savefile();
+            File file = UiHelper.savefile();
             if (file == null) return;
 
             btn3.setDisable(true);
@@ -296,7 +251,7 @@ public class Project200 extends Application {
                 progress.setVisible(false);
                 btn3.setDisable(false);
                 LOGGER.log(Level.SEVERE, "Failed to split/merge PDF", task.getException());
-                badpdfcall();
+                UiHelper.badpdfcall(inputfile != null ? Paths.get(inputfile).getFileName() : null);
             });
             new Thread(task).start();
         });
@@ -319,7 +274,7 @@ public class Project200 extends Application {
     }
 
     public void start(Stage primaryStage) {
-        grid = gridinfo();
+        grid = UiHelper.gridinfo();
 
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
